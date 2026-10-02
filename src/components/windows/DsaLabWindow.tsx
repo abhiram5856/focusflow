@@ -263,6 +263,163 @@ def findOrder(numCourses: int, prerequisites: list[list[int]]) -> list[int]:
       { title: 'Course Schedule II', difficulty: 'Medium', url: 'https://leetcode.com/problems/course-schedule-ii/' },
       { title: 'Alien Dictionary', difficulty: 'Hard', url: 'https://leetcode.com/problems/alien-dictionary/' }
     ]
+  },
+  {
+    id: 'tree-traversal-lca',
+    name: 'Binary Trees & BSTs (DFS / BFS & LCA)',
+    category: 'Trees',
+    signals: ['Hierarchy path finding', 'Lowest Common Ancestor (LCA)', 'Level-order / Zig-zag BFS', 'Binary Search Tree validity invariant'],
+    bruteForce: 'Storing full node ancestor paths in lists and finding first common ancestor: O(N) memory and time overhead',
+    optimized: 'Post-order DFS traversal. Recursively query left and right subtrees. If current node is p or q, or if left and right both return non-null, current node is the LCA.',
+    timeComplexity: 'O(N) visit every node once',
+    spaceComplexity: 'O(H) recursion stack where H is tree height (O(log N) balanced, O(N) skewed)',
+    javaCode: `// Lowest Common Ancestor of a Binary Tree
+public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    
+    if (left != null && right != null) return root; // Split point is LCA
+    return left != null ? left : right;
+}`,
+    pythonCode: `# Lowest Common Ancestor of a Binary Tree
+def lowestCommonAncestor(root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+    if not root or root == p or root == q:
+        return root
+    
+    left = lowestCommonAncestor(root.left, p, q)
+    right = lowestCommonAncestor(root.right, p, q)
+    
+    if left and right:
+        return root # Both branches found target
+    return left if left else right`,
+    commonMistakes: [
+      'Assuming the tree is a Binary Search Tree (BST) when values are arbitrary.',
+      'Checking values (root.val == p.val) instead of reference identity (root == p) when duplicate values are possible.'
+    ],
+    problems: [
+      { title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/' },
+      { title: 'Validate Binary Search Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/validate-binary-search-tree/' },
+      { title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard', url: 'https://leetcode.com/problems/binary-tree-maximum-path-sum/' }
+    ]
+  },
+  {
+    id: 'graph-shortest-path',
+    name: 'Dijkstra & Shortest Path (Weighted Graphs)',
+    category: 'Graphs',
+    signals: ['Minimum latency / cost in network graph with non-negative edge weights', 'Single source shortest path', 'PriorityQueue state exploration'],
+    bruteForce: 'Exhaustive DFS exploring all possible paths: O(V!) exponential time',
+    optimized: 'Dijkstra algorithm using Min-Heap (PriorityQueue). Greedily expand shortest tentative distance. Relaxation condition: if dist[u] + w < dist[v], update dist[v] and offer (v, dist[v]).',
+    timeComplexity: 'O((V + E) log V) with binary heap',
+    spaceComplexity: 'O(V + E) adjacency list and distance array',
+    javaCode: `// Network Delay Time (Dijkstra)
+public int networkDelayTime(int[][] times, int n, int k) {
+    Map<Integer, List<int[]>> graph = new HashMap<>();
+    for (int[] edge : times) {
+        graph.computeIfAbsent(edge[0], x -> new ArrayList<>()).add(new int[]{edge[1], edge[2]});
+    }
+    
+    PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+    int[] dist = new int[n + 1];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[k] = 0;
+    pq.offer(new int[]{k, 0});
+    
+    while (!pq.isEmpty()) {
+        int[] curr = pq.poll();
+        int u = curr[0], d = curr[1];
+        if (d > dist[u]) continue; // Stale heap entry
+        
+        for (int[] edge : graph.getOrDefault(u, Collections.emptyList())) {
+            int v = edge[0], weight = edge[1];
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                pq.offer(new int[]{v, dist[v]});
+            }
+        }
+    }
+    int maxDist = 0;
+    for (int i = 1; i <= n; i++) {
+        if (dist[i] == Integer.MAX_VALUE) return -1;
+        maxDist = Math.max(maxDist, dist[i]);
+    }
+    return maxDist;
+}`,
+    pythonCode: `# Network Delay Time (Dijkstra with heapq)
+import heapq
+def networkDelayTime(times: list[list[int]], n: int, k: int) -> int:
+    graph = {i: [] for i in range(1, n + 1)}
+    for u, v, w in times:
+        graph[u].append((v, w))
+        
+    pq = [(0, k)] # (distance, node)
+    dist = {}
+    
+    while pq:
+        d, u = heapq.heappop(pq)
+        if u in dist:
+            continue
+        dist[u] = d
+        for v, w in graph[u]:
+            if v not in dist:
+                heapq.heappush(pq, (d + w, v))
+                
+    return max(dist.values()) if len(dist) == n else -1`,
+    commonMistakes: [
+      'Forgetting the "if (d > dist[u]) continue;" stale entry check in Java.',
+      'Applying Dijkstra on graphs with negative edge weights (requires Bellman-Ford).'
+    ],
+    problems: [
+      { title: 'Network Delay Time', difficulty: 'Medium', url: 'https://leetcode.com/problems/network-delay-time/' },
+      { title: 'Cheapest Flights Within K Stops', difficulty: 'Medium', url: 'https://leetcode.com/problems/cheapest-flights-within-k-stops/' },
+      { title: 'Word Ladder', difficulty: 'Hard', url: 'https://leetcode.com/problems/word-ladder/' }
+    ]
+  },
+  {
+    id: 'dp-knapsack-subsequence',
+    name: 'Dynamic Programming (Knapsack & Subsequences)',
+    category: 'Dynamic Programming',
+    signals: ['Optimal sub-structure & overlapping subproblems', 'Min/max ways to reach target sum', 'Item choice with capacity constraint', 'Longest ordered subsequence'],
+    bruteForce: 'Recursion with 2^N state tree branch exploration without memoization: O(2^N)',
+    optimized: '1D/2D state space table with bottom-up tabulation. Define dp[i] as optimal answer for subproblem i. Transition: dp[i] = min/max over valid predecessor states.',
+    timeComplexity: 'O(N * Target) pseudo-polynomial for Knapsack, O(N log N) for LIS with binary search',
+    spaceComplexity: 'O(Target) space-optimized rolling 1D array',
+    javaCode: `// Coin Change (1D Tabulation DP)
+public int coinChange(int[] coins, int amount) {
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, amount + 1); // Sentinel value
+    dp[0] = 0;
+    
+    for (int i = 1; i <= amount; i++) {
+        for (int coin : coins) {
+            if (i >= coin) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    return dp[amount] > amount ? -1 : dp[amount];
+}`,
+    pythonCode: `# Coin Change (1D DP)
+def coinChange(coins: list[int], amount: int) -> int:
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if i >= coin:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+                
+    return dp[amount] if dp[amount] != float('inf') else -1`,
+    commonMistakes: [
+      'Using Integer.MAX_VALUE as sentinel in Java without guarding against overflow (+ 1 becomes negative!).',
+      'Confusing Permutations vs Combinations outer loop order (coins outer loop = combinations, amount outer loop = permutations).'
+    ],
+    problems: [
+      { title: 'Coin Change', difficulty: 'Medium', url: 'https://leetcode.com/problems/coin-change/' },
+      { title: 'Longest Increasing Subsequence', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-increasing-subsequence/' },
+      { title: 'Partition Equal Subset Sum', difficulty: 'Medium', url: 'https://leetcode.com/problems/partition-equal-subset-sum/' }
+    ]
   }
 ];
 
