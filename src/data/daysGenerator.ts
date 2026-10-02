@@ -1,8 +1,6 @@
 import type { DayPlan, PracticeProblem, InterviewQuestion, ResourceLink, DailyWorkloadTiers, MockInterviewRound } from '../types';
 import { getStageForDay, BEING_ZERO_SQL_TOPICS, calculateRevisionDays } from './curriculumData';
 
-// Domain catalogs for systematic multi-pillar daily progression
-
 interface DsaDayData {
   pattern: string;
   concept: string;
@@ -57,7 +55,6 @@ export function generateAll150Days(): DayPlan[] {
     const stage = getStageForDay(d);
     const revision = calculateRevisionDays(d);
 
-    // Progressive Pillar Synthesis based on day d
     let dsa: DsaDayData;
     let sql: SqlDayData;
     let backendCloud: BackendCloudDayData;
@@ -69,17 +66,19 @@ export function generateAll150Days(): DayPlan[] {
     let theme = '';
     let objective = '';
     let resources: ResourceLink[] = [];
-    let isJobMode = d > 120;
+    const isJobMode = d > 120;
     let mockRound: MockInterviewRound | undefined = undefined;
 
-    // --- DSA PROGRESSION (WITH COMPACT BIT MANIPULATION) ---
+    // =========================================================================
+    // 1. GRANULAR DSA PROGRESSION (Covering all primary interview patterns)
+    // =========================================================================
     if (d <= 8) {
       dsa = {
         pattern: 'Arrays: Traversal & In-Place Modification',
-        concept: 'Contiguous memory locality, in-place pointer shifts, and frequency indexing.',
+        concept: 'Contiguous memory layout, cache locality, and in-place pointer manipulation.',
         problems: [
-          { title: 'Two Sum', difficulty: 'Easy', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode', desc: 'HashMap one-pass lookup in O(N)' },
-          { title: 'Remove Duplicates from Sorted Array', difficulty: 'Easy', url: 'https://leetcode.com/problems/remove-duplicates-from-sorted-array/', platform: 'LeetCode', desc: 'Two pointer in-place overwrite' }
+          { title: 'Two Sum', difficulty: 'Easy', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode', desc: 'Single-pass HashMap lookup in O(N) time and O(N) space.' },
+          { title: 'Remove Duplicates from Sorted Array', difficulty: 'Easy', url: 'https://leetcode.com/problems/remove-duplicates-from-sorted-array/', platform: 'LeetCode', desc: 'Two-pointer slow/fast write in-place with O(1) space.' }
         ]
       };
     } else if (d <= 16) {
@@ -87,17 +86,17 @@ export function generateAll150Days(): DayPlan[] {
         pattern: 'Arrays: Prefix Sum & Difference Arrays',
         concept: 'O(1) range sum queries via prefix sums and O(1) range updates via difference arrays.',
         problems: [
-          { title: 'Subarray Sum Equals K', difficulty: 'Medium', url: 'https://leetcode.com/problems/subarray-sum-equals-k/', platform: 'LeetCode', desc: 'Prefix sum with frequency map' },
-          { title: 'Corporate Flight Bookings', difficulty: 'Medium', url: 'https://leetcode.com/problems/corporate-flight-bookings/', platform: 'LeetCode', desc: 'Difference array range additions' }
+          { title: 'Subarray Sum Equals K', difficulty: 'Medium', url: 'https://leetcode.com/problems/subarray-sum-equals-k/', platform: 'LeetCode', desc: 'Prefix sum hash map accounting for negative values.' },
+          { title: 'Corporate Flight Bookings', difficulty: 'Medium', url: 'https://leetcode.com/problems/corporate-flight-bookings/', platform: 'LeetCode', desc: 'Difference array range additions in O(N + Q) time.' }
         ]
       };
     } else if (d <= 24) {
       dsa = {
-        pattern: 'Arrays: Kadane & Intervals',
-        concept: 'Contiguous max subarray sum and greedy interval merging by sorting endpoints.',
+        pattern: 'Arrays: Kadane Algorithm & Interval Merging',
+        concept: 'Contiguous max subarray sum and greedy interval merging by sorting boundaries.',
         problems: [
-          { title: 'Maximum Subarray', difficulty: 'Medium', url: 'https://leetcode.com/problems/maximum-subarray/', platform: 'LeetCode', desc: 'Kadane algorithm in O(N)' },
-          { title: 'Merge Intervals', difficulty: 'Medium', url: 'https://leetcode.com/problems/merge-intervals/', platform: 'LeetCode', desc: 'Sort by start and compact' }
+          { title: 'Maximum Subarray', difficulty: 'Medium', url: 'https://leetcode.com/problems/maximum-subarray/', platform: 'LeetCode', desc: 'Kadane algorithm DP state compression in O(N) time and O(1) space.' },
+          { title: 'Merge Intervals', difficulty: 'Medium', url: 'https://leetcode.com/problems/merge-intervals/', platform: 'LeetCode', desc: 'Sort by start time and greedily extend running interval.' }
         ]
       };
     } else if (d <= 32) {
@@ -105,8 +104,8 @@ export function generateAll150Days(): DayPlan[] {
         pattern: 'Strings: Frequency Hashing & Palindromes',
         concept: 'Character count tuples, anagram grouping, and expand-around-center palindromes.',
         problems: [
-          { title: 'Group Anagrams', difficulty: 'Medium', url: 'https://leetcode.com/problems/group-anagrams/', platform: 'LeetCode', desc: 'Tuple frequency key grouping' },
-          { title: 'Longest Palindromic Substring', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode', desc: 'Expand around 2N-1 centers' }
+          { title: 'Group Anagrams', difficulty: 'Medium', url: 'https://leetcode.com/problems/group-anagrams/', platform: 'LeetCode', desc: 'Tuple frequency key grouping in O(N * K) time.' },
+          { title: 'Longest Palindromic Substring', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode', desc: 'Expand around 2N-1 centers in O(N^2) time and O(1) space.' }
         ]
       };
     } else if (d <= 40) {
@@ -114,128 +113,118 @@ export function generateAll150Days(): DayPlan[] {
         pattern: 'Two Pointers: Opposite Ends & Fast/Slow',
         concept: 'Shrinking search boundaries and Floyd cycle detection.',
         problems: [
-          { title: '3Sum', difficulty: 'Medium', url: 'https://leetcode.com/problems/3sum/', platform: 'LeetCode', desc: 'Sort + two pointers skipping duplicates' },
-          { title: 'Linked List Cycle II', difficulty: 'Medium', url: 'https://leetcode.com/problems/linked-list-cycle-ii/', platform: 'LeetCode', desc: 'Cycle start discovery' }
+          { title: '3Sum', difficulty: 'Medium', url: 'https://leetcode.com/problems/3sum/', platform: 'LeetCode', desc: 'Sort + two pointers with duplicate skip conditions.' },
+          { title: 'Linked List Cycle II', difficulty: 'Medium', url: 'https://leetcode.com/problems/linked-list-cycle-ii/', platform: 'LeetCode', desc: 'Floyd Tortoise and Hare cycle start node proof.' }
         ]
       };
     } else if (d <= 48) {
       dsa = {
-        pattern: 'Binary Search: Rotated & Answer-Space',
+        pattern: 'Binary Search: Rotated Arrays & Answer Space',
         concept: 'Identifying sorted halves in rotated arrays and monotonic feasibility search.',
         problems: [
-          { title: 'Search in Rotated Sorted Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/search-in-rotated-sorted-array/', platform: 'LeetCode', desc: 'O(log N) branch discrimination' },
-          { title: 'Koko Eating Bananas', difficulty: 'Medium', url: 'https://leetcode.com/problems/koko-eating-bananas/', platform: 'LeetCode', desc: 'Binary search on answer space' }
+          { title: 'Search in Rotated Sorted Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/search-in-rotated-sorted-array/', platform: 'LeetCode', desc: 'O(log N) branch discrimination on sorted half.' },
+          { title: 'Koko Eating Bananas', difficulty: 'Medium', url: 'https://leetcode.com/problems/koko-eating-bananas/', platform: 'LeetCode', desc: 'Binary search on monotonic answer space.' }
         ]
       };
     } else if (d <= 56) {
-      // COMPACT BIT MANIPULATION MODULE (GAPS FIXED)
       dsa = {
-        pattern: 'Bit Manipulation: XOR, Bitmasks & Power of Two',
-        concept: 'Bitwise identities (x ^ x = 0, x ^ 0 = x), Brian Kernighan bit clearing n & (n-1), and subset masks (1 << i).',
+        pattern: 'Bit Manipulation: XOR, Bitmasks & Brian Kernighan',
+        concept: 'Bitwise identities (x ^ x = 0), Brian Kernighan bit clearing n & (n-1), and subset masks.',
         problems: [
-          { title: 'Single Number', difficulty: 'Easy', url: 'https://leetcode.com/problems/single-number/', platform: 'LeetCode', desc: 'XOR identity removes duplicates in O(N) time and O(1) space' },
-          { title: 'Counting Bits', difficulty: 'Easy', url: 'https://leetcode.com/problems/counting-bits/', platform: 'LeetCode', desc: 'DP with bit shift: dp[i] = dp[i >> 1] + (i & 1)' },
-          { title: 'Subsets', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets/', platform: 'LeetCode', desc: 'Bitmask enumeration from 0 to (1 << n) - 1' }
+          { title: 'Single Number', difficulty: 'Easy', url: 'https://leetcode.com/problems/single-number/', platform: 'LeetCode', desc: 'XOR identity eliminates duplicate elements in O(1) space.' },
+          { title: 'Subsets', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets/', platform: 'LeetCode', desc: 'Bitmask enumeration from 0 to (1 << n) - 1.' }
         ]
       };
-    } else if (d <= 64) {
-      dsa = {
-        pattern: 'Linked Lists: In-Place Reversal & Merging',
-        concept: '3-pointer reversal, dummy heads, and divide-and-conquer k-way merging.',
-        problems: [
-          { title: 'Reverse Nodes in k-Group', difficulty: 'Hard', url: 'https://leetcode.com/problems/reverse-nodes-in-k-group/', platform: 'LeetCode', desc: 'O(1) space pointer rewiring' },
-          { title: 'Merge k Sorted Lists', difficulty: 'Hard', url: 'https://leetcode.com/problems/merge-k-sorted-lists/', platform: 'LeetCode', desc: 'Min-Heap and divide-and-conquer' }
-        ]
-      };
-    } else if (d <= 72) {
+    } else if (d <= 68) {
       dsa = {
         pattern: 'Stack: Monotonic Stack & Deque',
         concept: 'Nearest greater/smaller elements and sliding window extremum in O(N).',
         problems: [
-          { title: 'Daily Temperatures', difficulty: 'Medium', url: 'https://leetcode.com/problems/daily-temperatures/', platform: 'LeetCode', desc: 'Monotonic decreasing index stack' },
-          { title: 'Largest Rectangle in Histogram', difficulty: 'Hard', url: 'https://leetcode.com/problems/largest-rectangle-in-histogram/', platform: 'LeetCode', desc: 'Single-pass monotonic stack' }
+          { title: 'Daily Temperatures', difficulty: 'Medium', url: 'https://leetcode.com/problems/daily-temperatures/', platform: 'LeetCode', desc: 'Monotonic decreasing index stack.' },
+          { title: 'Largest Rectangle in Histogram', difficulty: 'Hard', url: 'https://leetcode.com/problems/largest-rectangle-in-histogram/', platform: 'LeetCode', desc: 'Single-pass monotonic stack finding left/right boundaries.' }
         ]
       };
-    } else if (d <= 80) {
+    } else if (d <= 78) {
       dsa = {
-        pattern: 'Heaps & Priority Queues: Top-K & Median',
-        concept: 'Min/Max-heap duality, stream processing, and order statistics.',
+        pattern: 'Heaps & Priority Queues: Top-K & Two Heaps',
+        concept: 'Min/Max-heap duality, stream processing, and continuous median maintenance.',
         problems: [
-          { title: 'Kth Largest Element in an Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/kth-largest-element-in-an-array/', platform: 'LeetCode', desc: 'Min-Heap size K or Quickselect' },
-          { title: 'Find Median from Data Stream', difficulty: 'Hard', url: 'https://leetcode.com/problems/find-median-from-data-stream/', platform: 'LeetCode', desc: 'Two heaps (max-heap + min-heap) balance' }
+          { title: 'Kth Largest Element in an Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/kth-largest-element-in-an-array/', platform: 'LeetCode', desc: 'Min-Heap size K in O(N log K) or Quickselect.' },
+          { title: 'Find Median from Data Stream', difficulty: 'Hard', url: 'https://leetcode.com/problems/find-median-from-data-stream/', platform: 'LeetCode', desc: 'Two heaps (max-heap + min-heap) balance.' }
         ]
       };
-    } else if (d <= 92) {
+    } else if (d <= 88) {
       dsa = {
-        pattern: 'Recursion & Backtracking: Subsets & Pruning',
+        pattern: 'Recursion & Backtracking: Subsets & Grid DFS',
         concept: 'State-space decision trees, duplicate pruning, and constraint satisfaction.',
         problems: [
-          { title: 'Subsets II', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets-ii/', platform: 'LeetCode', desc: 'Sort + skip duplicate siblings' },
-          { title: 'Word Search', difficulty: 'Medium', url: 'https://leetcode.com/problems/word-search/', platform: 'LeetCode', desc: 'In-place grid DFS backtracking' }
+          { title: 'Subsets II', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets-ii/', platform: 'LeetCode', desc: 'Sort + skip duplicate siblings in recursion tree.' },
+          { title: 'Word Search', difficulty: 'Medium', url: 'https://leetcode.com/problems/word-search/', platform: 'LeetCode', desc: 'In-place grid DFS backtracking with character mark.' }
         ]
       };
-    } else if (d <= 106) {
+    } else if (d <= 104) {
       dsa = {
-        pattern: 'Binary Trees: DFS/BFS, BST & LCA',
+        pattern: 'Binary Trees & BSTs: DFS/BFS, LCA & Diameter',
         concept: 'Tree path metrics, level order traversals, and lowest common ancestors.',
         problems: [
-          { title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/', platform: 'LeetCode', desc: 'Post-order DFS split check' },
-          { title: 'Validate Binary Search Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/validate-binary-search-tree/', platform: 'LeetCode', desc: 'Bounding range invariant' }
+          { title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/', platform: 'LeetCode', desc: 'Post-order DFS split check in O(N) time.' },
+          { title: 'Validate Binary Search Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/validate-binary-search-tree/', platform: 'LeetCode', desc: 'Bounding range invariant [min, max] DFS.' }
         ]
       };
-    } else if (d <= 120) {
+    } else if (d <= 118) {
       dsa = {
         pattern: 'Graphs: BFS/DFS, TopoSort & Shortest Paths',
         concept: 'Connected components, Kahn algorithm indegrees, and Dijkstra shortest paths.',
         problems: [
-          { title: 'Course Schedule II', difficulty: 'Medium', url: 'https://leetcode.com/problems/course-schedule-ii/', platform: 'LeetCode', desc: 'Kahn algorithm topological sort' },
-          { title: 'Network Delay Time', difficulty: 'Medium', url: 'https://leetcode.com/problems/network-delay-time/', platform: 'LeetCode', desc: 'Dijkstra PriorityQueue min-heap' }
+          { title: 'Course Schedule II', difficulty: 'Medium', url: 'https://leetcode.com/problems/course-schedule-ii/', platform: 'LeetCode', desc: 'Kahn algorithm topological sort with in-degree queue.' },
+          { title: 'Network Delay Time', difficulty: 'Medium', url: 'https://leetcode.com/problems/network-delay-time/', platform: 'LeetCode', desc: 'Dijkstra PriorityQueue min-heap in O((V + E) log V).' }
         ]
       };
     } else {
-      // DAYS 121-150: FINAL 30-DAY JOB MODE INTERVIEW SPRINTS
       dsa = {
-        pattern: 'Job Mode: Timed Interview Sprint & Dynamic Programming',
-        concept: 'Knapsack, Subsequences (LCS/LIS), and high-frequency LeetCode 75 timed mock interview sets.',
+        pattern: 'Dynamic Programming: Knapsack, LIS & Timed Sprints',
+        concept: 'Unbounded Knapsack, Subsequences (LCS/LIS), and high-frequency timed interview sets.',
         problems: [
-          { title: 'Coin Change', difficulty: 'Medium', url: 'https://leetcode.com/problems/coin-change/', platform: 'LeetCode', desc: 'Unbounded Knapsack 1D DP' },
-          { title: 'Longest Increasing Subsequence', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-increasing-subsequence/', platform: 'LeetCode', desc: 'Patience sort binary search O(N log N)' }
+          { title: 'Coin Change', difficulty: 'Medium', url: 'https://leetcode.com/problems/coin-change/', platform: 'LeetCode', desc: 'Unbounded Knapsack 1D tabulation in O(N * Amount).' },
+          { title: 'Longest Increasing Subsequence', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-increasing-subsequence/', platform: 'LeetCode', desc: 'Patience sort binary search in O(N log N).' }
         ]
       };
     }
 
-    // --- SQL PROGRESSION (Being Zero Backbone + Advanced SQL) ---
-    const bzIdx = Math.min(BEING_ZERO_SQL_TOPICS.length - 1, Math.floor((d - 1) / 2));
+    // =========================================================================
+    // 2. SQL PROGRESSION (Being Zero Curriculum + Advanced Analytical SQL)
+    // =========================================================================
+    const bzIdx = Math.min(BEING_ZERO_SQL_TOPICS.length - 1, Math.floor((d - 1) / 3));
     const bzTopic = BEING_ZERO_SQL_TOPICS[bzIdx];
 
-    if (d <= 15) {
+    if (d <= 20) {
       sql = {
-        beingZeroModule: `Being Zero Module: ${bzTopic.title}`,
-        topic: 'DDL, DML & Table Constraints',
+        beingZeroModule: `Being Zero: ${bzTopic.title}`,
+        topic: `DDL, DML, Table Constraints & Normalization (Day ${d})`,
         exercise: {
           title: `Being Zero: ${bzTopic.title} Practice`,
-          objective: 'Design normalized schemas with primary, foreign, unique, and check constraints; perform atomic INSERT and UPDATE operations.',
+          objective: 'Design normalized tables with PRIMARY KEY, FOREIGN KEY, and CHECK constraints; execute atomic INSERT and UPDATE queries.',
           difficulty: 'Easy',
           table: 'CREATE TABLE employees (id INT PRIMARY KEY, name VARCHAR(100), dept_id INT, salary NUMERIC(10,2), hire_date DATE);',
-          solution: 'INSERT INTO employees VALUES (1, "Alice", 101, 85000.00, "2024-01-15");'
+          solution: 'INSERT INTO employees (id, name, dept_id, salary, hire_date) VALUES (1, "Alice", 101, 85000.00, "2024-01-15");'
         }
       };
-    } else if (d <= 30) {
+    } else if (d <= 45) {
       sql = {
-        beingZeroModule: `Being Zero Module: ${bzTopic.title}`,
-        topic: 'Filtering, Expressions & Aggregations',
+        beingZeroModule: `Being Zero: ${bzTopic.title}`,
+        topic: `Aggregations, GROUP BY & HAVING Filters (Day ${d})`,
         exercise: {
-          title: 'Departmental Salary Aggregation',
-          objective: 'Group records by department, compute count, sum, average salary, and filter groups with HAVING salary > 80000.',
+          title: 'Departmental Salary Aggregation & High-Earner Groups',
+          objective: 'Group records by department, compute count, sum, average salary, and filter aggregated groups with HAVING AVG(salary) > 80000.',
           difficulty: 'Medium',
           table: 'employees (id, name, dept_id, salary, hire_date)',
           solution: 'SELECT dept_id, COUNT(*) AS emp_count, AVG(salary) AS avg_sal FROM employees GROUP BY dept_id HAVING AVG(salary) > 80000;'
         }
       };
-    } else if (d <= 50) {
+    } else if (d <= 75) {
       sql = {
-        beingZeroModule: `Being Zero Module: ${bzTopic.title}`,
-        topic: 'Multi-Table Joins, Subqueries & Views',
+        beingZeroModule: `Being Zero: ${bzTopic.title}`,
+        topic: `Multi-Table Joins, Subqueries & Correlated EXISTS (Day ${d})`,
         exercise: {
           title: 'Inner, Outer & Anti-Join Customer Analysis',
           objective: 'Identify customers who placed orders in 2024 but have never initiated a return using LEFT JOIN and WHERE return_id IS NULL.',
@@ -244,250 +233,254 @@ export function generateAll150Days(): DayPlan[] {
           solution: 'SELECT c.name FROM customers c JOIN orders o ON c.c_id = o.c_id LEFT JOIN returns r ON o.o_id = r.o_id WHERE strftime("%Y", o.order_date) = "2024" AND r.r_id IS NULL;'
         }
       };
-    } else if (d <= 75) {
+    } else if (d <= 110) {
       sql = {
-        beingZeroModule: `Being Zero Module: ${bzTopic.title}`,
-        topic: 'Window Functions & Recursive CTEs',
+        beingZeroModule: `Being Zero: ${bzTopic.title}`,
+        topic: `Window Functions, Ranking & Recursive CTEs (Day ${d})`,
         exercise: {
-          title: 'Top 3 Salaries per Department via DENSE_RANK',
-          objective: 'Assign ranking to salaries partitioned by department, and compute 3-month rolling revenue totals using ROWS BETWEEN.',
+          title: 'Running Totals, Rolling 7-Day Averages & Hierarchies',
+          objective: 'Calculate running cumulative revenue per department and employee rank using ROW_NUMBER(), DENSE_RANK(), and LAG() offset comparisons.',
           difficulty: 'Hard',
-          table: 'salaries (emp_id, dept_id, salary, month_date)',
-          solution: 'WITH Ranked AS (SELECT emp_id, dept_id, salary, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) as rnk FROM salaries) SELECT * FROM Ranked WHERE rnk <= 3;'
-        }
-      };
-    } else if (d <= 100) {
-      sql = {
-        beingZeroModule: 'Advanced SQL Expansion: Analytics & Optimization',
-        topic: 'Gaps & Islands, Sessionization & Retention Cohorts',
-        exercise: {
-          title: 'User Activity Sessionization (30-Minute Inactivity Window)',
-          objective: 'Identify distinct user browsing sessions by flagging events where time since previous event exceeds 30 minutes using LAG().',
-          difficulty: 'Hard',
-          table: 'user_events (user_id, event_time, event_type)',
-          solution: 'SELECT user_id, event_time, SUM(CASE WHEN prev_time IS NULL OR (julianday(event_time) - julianday(prev_time))*24*60 > 30 THEN 1 ELSE 0 END) OVER (PARTITION BY user_id ORDER BY event_time) AS session_id FROM (SELECT *, LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_time FROM user_events);'
-        }
-      };
-    } else if (d <= 125) {
-      sql = {
-        beingZeroModule: 'PostgreSQL Deep Dive & Internals',
-        topic: 'JSONB Queries, Indexing Strategy & EXPLAIN ANALYZE',
-        exercise: {
-          title: 'PostgreSQL GIN Indexing on JSONB Attributes',
-          objective: 'Query semi-structured telemetry data using JSON path operators (@>, ->>) and benchmark Index Scan vs Sequential Scan.',
-          difficulty: 'Hard',
-          table: 'events (id SERIAL PRIMARY KEY, payload JSONB); CREATE INDEX idx_payload ON events USING GIN (payload);',
-          solution: 'EXPLAIN ANALYZE SELECT * FROM events WHERE payload @> \'{"status": "error", "code": 500}\';'
+          table: 'sales (sale_id, emp_id, dept_id, sale_amount, sale_date)',
+          solution: 'SELECT sale_id, emp_id, sale_amount, SUM(sale_amount) OVER (PARTITION BY dept_id ORDER BY sale_date) AS running_total, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY sale_amount DESC) as rank FROM sales;'
         }
       };
     } else {
       sql = {
-        beingZeroModule: 'Job Mode: Timed SQL Interview Gauntlet',
-        topic: 'Timed Analytical Challenges: Retention Cohorts, Funnels & MVCC',
+        beingZeroModule: 'PostgreSQL Deep Dive & Timed Gauntlet',
+        topic: `PostgreSQL Internals: EXPLAIN ANALYZE, GIN Indexes & Cohorts (Day ${d})`,
         exercise: {
-          title: 'Day 30 User Retention Cohort Analysis',
-          objective: 'Calculate the percentage of users active in month 0 who returned and completed a transaction in month 1.',
+          title: 'Month-over-Month Retention Cohort & JSONB GIN Indexing',
+          objective: 'Write retention cohort queries with CTEs and analyze index scans vs sequential table scans using EXPLAIN ANALYZE.',
           difficulty: 'Hard',
-          table: 'user_transactions (user_id, transaction_date, amount)',
-          solution: 'WITH FirstPurchase AS (SELECT user_id, DATE_TRUNC("month", MIN(transaction_date)) as cohort_month FROM user_transactions GROUP BY user_id) SELECT cohort_month, COUNT(DISTINCT f.user_id) as total_users FROM FirstPurchase f GROUP BY cohort_month;'
+          table: 'user_activity (user_id INT, activity_date DATE, metadata JSONB); CREATE INDEX idx_meta ON user_activity USING GIN (metadata);',
+          solution: 'EXPLAIN ANALYZE WITH MonthlyActivity AS (SELECT user_id, DATE_TRUNC("month", activity_date) as active_month FROM user_activity GROUP BY 1, 2) SELECT active_month, COUNT(DISTINCT user_id) FROM MonthlyActivity GROUP BY 1;'
         }
       };
     }
 
-    // --- BACKEND & CLOUD PROGRESSION (WITH gRPC, FLYWAY & REBALANCING) ---
-    if (d <= 25) {
+    // =========================================================================
+    // 3. DETAILED CLOUD & BACKEND CURRICULUM (Expanded Granular Topics)
+    // =========================================================================
+    if (d <= 15) {
       backendCloud = {
         track: 'Java',
-        topic: `Java Memory, Concurrency & JVM Internals (Day ${d})`,
+        topic: `Java Internals: ClassLoaders, JVM Memory & JMM (Day ${d})`,
         learn: [
-          'Stack vs Heap memory allocation, Metaspace, and GC roots reachability',
-          'Java Memory Model (JMM), synchronized monitors, and volatile visibility',
-          'OOP polymorphism dynamic dispatch vtables and interface default resolution'
+          `JVM ClassLoader hierarchy: Bootstrap, Platform, and Application ClassLoaders with parent delegation rules.`,
+          `Java Memory Layout: Stack frames (Local Variables, Operand Stack) vs Heap (Eden, Survivor, Tenured) and Metaspace.`,
+          `Java Memory Model (JMM): volatile visibility, CPU memory barriers (LoadLoad/StoreStore), and happens-before guarantees.`
         ]
       };
-    } else if (d <= 50) {
+    } else if (d <= 30) {
+      backendCloud = {
+        track: 'Java',
+        topic: `Java 21 Concurrency: Virtual Threads & Synchronization (Day ${d})`,
+        learn: [
+          `Virtual Threads (Project Loom): Unmounting continuation stacks on blocking I/O, carrier thread scheduling, and preventing thread pinning.`,
+          `Object Monitors & Synchronization: Biased locking revocation, lightweight CAS spinlocks, and ReentrantLock Condition queues.`,
+          `Concurrent Collections: ConcurrentHashMap CAS bucket initialization, Node lock striping, and CopyOnWriteArrayList COW mechanics.`
+        ]
+      };
+    } else if (d <= 55) {
       backendCloud = {
         track: 'Spring Boot',
-        topic: `Spring Boot 3 REST, JPA & Flyway Migrations (Day ${d})`,
+        topic: `Spring Boot 3: IoC, JPA, Hibernate & Flyway Migrations (Day ${d})`,
         learn: [
-          'Inversion of Control (IoC) container, Bean scopes, and ApplicationContext lifecycle',
-          'Database Migrations with Flyway: versioned V1__init.sql scripts, repeatable migrations, and preventing schema drift',
-          'Spring Data JPA, Hibernate L1/L2 cache, HikariCP connection pooling, and solving the N+1 select problem'
+          `Spring IoC Container: Bean lifecycle (Instantiation, Populate, BeanPostProcessor), scopes, and circular dependency resolution.`,
+          `Spring Data JPA & Hibernate: L1 Session cache, L2 shared cache, HikariCP connection pooling, and solving N+1 queries with JOIN FETCH.`,
+          `Database Migrations with Flyway: Versioned V1__init.sql scripts, repeatable R__ views, checksum validation, and rollback strategies.`
         ]
       };
-    } else if (d <= 70) {
+    } else if (d <= 75) {
       backendCloud = {
         track: 'Microservices',
-        topic: `Spring Security, Redis & gRPC Services (Day ${d})`,
+        topic: `Microservices: Spring Security 6, Redis & gRPC (Day ${d})`,
         learn: [
-          'Spring Security 6 filter chain, JWT verification, and stateless REST authentication',
-          'Redis Cache-Aside pattern, TTL eviction, and token-bucket rate limiting',
-          'gRPC and Protocol Buffers: defining .proto service contracts, HTTP/2 multiplexed framing, and client stubs'
+          `Spring Security 6: SecurityFilterChain, stateless JWT authentication, and method-level pre-authorization (@PreAuthorize).`,
+          `Redis Caching: Cache-Aside pattern, Cache Stampede mitigation (Mutex lock & Probabilistic early expiration), and Redis Cluster partitioning.`,
+          `gRPC Services: Protocol Buffers v3 schema definition, HTTP/2 multiplexed streams, bi-directional RPCs, and client channel stubs.`
         ]
       };
-    } else if (d <= 90) {
+    } else if (d <= 95) {
       backendCloud = {
         track: 'AWS',
-        topic: `Kafka Event Streaming & AWS Cloud Core (Day ${d})`,
+        topic: `Distributed Streaming: Kafka & AWS Cloud Infrastructure (Day ${d})`,
         learn: [
-          'Kafka broker architecture: topic partitions, consumer groups, offset commit semantics, and rebalancing',
-          'AWS IAM least-privilege roles, policies, and AWS STS temporary credentials',
-          'VPC networking: public/private subnets, Route Tables, Internet Gateways, and NAT Gateways'
+          `Apache Kafka: Broker cluster architecture, topic partitions, producer idempotent ACKS=all, consumer group rebalances, and lag monitoring.`,
+          `AWS Core Architecture: IAM least-privilege roles, STS AssumeRole, S3 lifecycle policies, and KMS envelope encryption.`,
+          `AWS VPC Networking: CIDR block subnetting, Public vs Private subnets, Route Tables, Internet Gateways, and NAT Gateway routing.`
         ]
       };
-    } else if (d <= 105) {
+    } else if (d <= 115) {
       backendCloud = {
         track: 'DevOps',
-        topic: `Docker Multi-Stage, Compose & Kubernetes Basics (Day ${d})`,
+        topic: `Containerization & Orchestration: Docker, Kubernetes & CI/CD (Day ${d})`,
         learn: [
-          'Multi-stage Dockerfile optimization for Java/Python, non-root security, and Docker Compose networks',
-          'Kubernetes Pods, Deployments, Services (ClusterIP, NodePort, LoadBalancer), ConfigMaps, and Ingress',
-          'Application health probes: Liveness vs Readiness endpoints'
+          `Docker Multi-Stage Builds: Minimizing runtime attack surface, non-root user execution, layer caching, and distroless base images.`,
+          `Kubernetes Core Objects: Pods, Deployments, ReplicaSets, Services (ClusterIP, NodePort, LoadBalancer), and ConfigMaps/Secrets.`,
+          `Kubernetes Operations: Pod scheduling, resource requests vs limits, Liveness/Readiness/Startup probes, and Horizontal Pod Autoscalers (HPA).`
         ]
       };
-    } else if (d <= 120) {
+    } else if (d <= 130) {
       backendCloud = {
         track: 'Microservices',
-        topic: `Circuit Breakers, Terraform IaC & Observability (Day ${d})`,
+        topic: `Resilience, IaC & Observability: Resilience4j, Terraform & OTel (Day ${d})`,
         learn: [
-          'Resilience4j circuit breakers, rate limiters, and fallbacks in distributed microservices',
-          'Terraform declarative infrastructure: AWS provider, S3 remote state, and DynamoDB locking',
-          'Prometheus custom metrics, OpenTelemetry distributed tracing spans, and structured JSON logs'
+          `Fault Tolerance: Resilience4j Circuit Breaker state transitions (CLOSED -> OPEN -> HALF_OPEN), rate limiters, and Bulkheads.`,
+          `Terraform Infrastructure as Code: Declarative AWS resource modules, S3 remote state storage, and DynamoDB state locking.`,
+          `OpenTelemetry Observability: Distributed trace propagation (W3C tracecontext), Prometheus metric scrapers, and structured JSON logging.`
         ]
       };
     } else {
       backendCloud = {
         track: 'System Design',
-        topic: `Job Mode: System Design Whiteboard Defense (Day ${d})`,
+        topic: `System Design: High-Throughput Distributed Architecture (Day ${d})`,
         learn: [
-          'Mastering the 8 Core Architectures: URL Shortener, Chat System, Notification Service, File Storage, Job Queue, Rate Limiter, API Gateway, and AI RAG System',
-          'Capacity estimation math: QPS, read-to-write ratios, ingress/egress bandwidth, and storage projections',
-          'Defending trade-offs: Caching vs fresh data, SQL ACID vs NoSQL availability, synchronous REST vs asynchronous Kafka'
+          `Capacity Estimation: Back-of-the-envelope calculations for QPS, ingress/egress bandwidth, storage IOPS, and memory sizing.`,
+          `High-Scale Patterns: URL Shortener, Real-time Chat (WebSocket + Redis PubSub), Rate Limiter (Token Bucket), and Event-Driven Notifications.`,
+          `Tradeoff Defense: SQL ACID vs NoSQL Eventual Consistency, synchronous REST vs asynchronous Kafka, and CDN edge caching.`
         ]
       };
     }
 
-    // --- AI / ML / GenAI PROGRESSION (WITH PEFT/LoRA & SSE TOKEN STREAMING) ---
-    if (d <= 25) {
+    // =========================================================================
+    // 4. DETAILED PYTHON, AI/ML & GENAI CURRICULUM (Expanded Granular Topics)
+    // =========================================================================
+    if (d <= 15) {
       aiMl = {
         track: 'Python Data Science',
-        topic: `Python Memory, SIMD Vectorization & DataFrames (Day ${d})`,
+        topic: `Python Internals: CPython, Memory Model, GIL & Metaclasses (Day ${d})`,
         learn: [
-          'CPython object layout (PyObject), reference counting, cyclic garbage collector, and GIL mechanics',
-          'NumPy ndarray memory layout, C-contiguous strides, and multidimensional broadcasting rules',
-          'Pandas DataFrame indexers (loc vs iloc), vectorized string transformations, and groupby aggregations'
+          `CPython object model: PyObject header, ob_refcnt reference counting, cyclic garbage collection (generation 0/1/2), and GIL internals.`,
+          `Advanced Python Mechanics: Generators and coroutines, memory-efficient iterators, context managers (__enter__/__exit__), and descriptors.`,
+          `Python Type System & Concurrency: Type hinting with typing/Pydantic, multiprocessing vs asyncio event loop, and Python 3.13 free-threading.`
+        ]
+      };
+    } else if (d <= 30) {
+      aiMl = {
+        track: 'Python Data Science',
+        topic: `High-Performance Data Computing: NumPy, SIMD & Pandas (Day ${d})`,
+        learn: [
+          `NumPy Strides & Layouts: C-contiguous vs Fortran-contiguous memory, zero-copy slicing, SIMD vectorization, and multidimensional broadcasting.`,
+          `Pandas Performance: Vectorized transformations, Categorical dtypes for 10x memory reduction, groupby split-apply-combine, and window operations.`,
+          `Polars & Modern Dataframes: Apache Arrow in-memory columnar format, SIMD parallel execution, lazy query optimization, and streaming processing.`
         ]
       };
     } else if (d <= 55) {
       aiMl = {
         track: 'Classical ML',
-        topic: `Supervised Learning, Feature Engineering & Tuning (Day ${d})`,
+        topic: `Classical ML: Optimization, Ensembles & Scikit-learn Pipelines (Day ${d})`,
         learn: [
-          'Linear/Logistic Regression, cost functions, gradient descent, and L1/L2 regularization (Lasso vs Ridge)',
-          'Decision Trees, Random Forest bagging, Gradient Boosting (XGBoost / LightGBM), and handling class imbalance (SMOTE)',
-          'Scikit-learn Pipelines, ColumnTransformers, cross-validation, and metrics (Precision, Recall, ROC-AUC, PR-AUC)'
+          `Supervised Learning Mathematics: Cost functions (MSE, Log-Loss), gradient descent variants, and L1/L2 regularization (Lasso vs Ridge).`,
+          `Tree Ensembles: Random Forest bagging and out-of-bag error, Gradient Boosting (XGBoost, LightGBM, CatBoost), and handling class imbalance (SMOTE).`,
+          `Production ML Pipelines: Scikit-learn ColumnTransformer, custom transformers, StratifiedKFold validation, and ROC-AUC / PR-AUC tradeoffs.`
         ]
       };
-    } else if (d <= 80) {
+    } else if (d <= 75) {
       aiMl = {
         track: 'Deep Learning',
-        topic: `Neural Networks, PyTorch Tensors & Training Loops (Day ${d})`,
+        topic: `Deep Learning: PyTorch Tensors, Autograd & Neural Nets (Day ${d})`,
         learn: [
-          'Multilayer Perceptrons (MLP), forward pass, backpropagation calculus, and activation functions (ReLU, GELU, Softmax)',
-          'Optimizers (SGD with Momentum, AdamW), learning rate schedules, dropout, and batch normalization',
-          'Word2Vec, dense vector embeddings, cosine similarity metrics, and PyTorch Tensor operations'
+          `PyTorch Computational Graph: Tensors, dynamic autograd backward pass, in-place operation warnings, and GPU CUDA memory allocation.`,
+          `Neural Network Architecture: Multilayer Perceptrons, activation functions (ReLU, GELU, SiLU), Dropout, LayerNorm, and Batch Normalization.`,
+          `Training Optimization: SGD with Momentum, AdamW weight decay, learning rate warmup/cosine annealing schedules, and mixed precision (FP16/BF16).`
         ]
       };
-    } else if (d <= 100) {
+    } else if (d <= 95) {
       aiMl = {
         track: 'GenAI & LLMs',
-        topic: `Transformer Architecture, Vector DBs & Advanced RAG (Day ${d})`,
+        topic: `Transformers, Vector Databases & Advanced RAG (Day ${d})`,
         learn: [
-          'Transformer encoder-decoder mechanics: Self-Attention, Multi-Head Attention, and positional encodings',
-          'Vector Databases (pgvector, Chroma, Pinecone) and HNSW (Hierarchical Navigable Small World) indexing',
-          'Advanced RAG pipelines: Semantic chunking, Hybrid Search (Dense embeddings + BM25 keyword), and Cross-Encoder reranking'
+          `Transformer Architecture: Multi-Head Self-Attention matrix math (Q*K^T / sqrt(d_k)), RoPE (Rotary Position Embeddings), and KV-cache mechanics.`,
+          `Vector Databases: pgvector and Pinecone index structures, HNSW (Hierarchical Navigable Small World) graphs, and IVF-PQ indexing tradeoffs.`,
+          `Advanced RAG Systems: Semantic chunking, Hybrid Search (Dense embeddings + BM25 sparse keyword), and Cross-Encoder reranking.`
         ]
       };
     } else if (d <= 110) {
-      // PEFT, LoRA & QLoRA MODULE (GAPS FIXED)
       aiMl = {
         track: 'GenAI & LLMs',
         topic: `Fine-Tuning Mechanics: PEFT, LoRA & QLoRA (Day ${d})`,
         learn: [
-          'Parameter-Efficient Fine-Tuning (PEFT) intuition: freezing base weights and injecting trainable low-rank decomposition matrices (W + B*A)',
-          'LoRA hyperparameters: Rank (r), Alpha scaling factor, and targeting Attention Query/Value projection matrices',
-          'Decision Framework: Fine-Tuning vs RAG vs Prompt Engineering — when to fine-tune (domain style, syntax, specialized task) vs RAG (dynamic knowledge, factual grounding)'
+          `Parameter-Efficient Fine-Tuning: Freezing base model weights W0 and training low-rank decomposition matrices B*A (where r << d).`,
+          `LoRA Hyperparameters & Quantization: Rank (r), Alpha scaling, target attention modules (q_proj, v_proj), and 4-bit NormalFloat (NF4) QLoRA.`,
+          `Architectural Decision Matrix: When to choose Prompt Engineering vs RAG (dynamic facts) vs Fine-Tuning (domain syntax, tone, and formatting).`
         ]
       };
-    } else if (d <= 120) {
-      // AGENTS & SSE STREAMING (GAPS FIXED)
+    } else if (d <= 125) {
       aiMl = {
         track: 'GenAI & LLMs',
-        topic: `LangGraph Agents & SSE Token Streaming (Day ${d})`,
+        topic: `Autonomous Agents: LangGraph, Tools & SSE Streaming (Day ${d})`,
         learn: [
-          'Autonomous Agent architectures: Tool calling, Model Context Protocol (MCP), and cyclic state machines with LangGraph',
-          'Frontend/AI Streaming Glue: Server-Sent Events (SSE) protocol, text/event-stream headers, and browser EventSource / fetch stream readers',
-          'Handling network disconnects, token buffering, and structured Pydantic JSON output enforcement'
+          `Multi-Agent Orchestration: LangGraph cyclical state graphs, conditional routing, tool calling, and human-in-the-loop state checkpoints.`,
+          `Real-time Streaming Pipelines: Server-Sent Events (SSE) protocol, text/event-stream headers, and client-side token buffering.`,
+          `Reliability & Guardrails: Pydantic structured output parsing, retry loops on malformed JSON, and NeMo/Guardrails hallucination filters.`
         ]
       };
     } else {
       aiMl = {
         track: 'MLOps & LLMOps',
-        topic: `Job Mode: Production LLMOps, vLLM & AI Defense (Day ${d})`,
+        topic: `Production LLMOps: vLLM, Evaluation & Serving Architectures (Day ${d})`,
         learn: [
-          'vLLM high-throughput serving with PagedAttention, continuous batching, and semantic prompt caching',
-          'LLM evaluation frameworks: Ragas (Faithfulness, Answer Relevance, Context Precision), TruLens, and LLM-as-a-Judge',
-          'Defending AI choices in interviews: RAG vs Fine-tuning, chunking trade-offs, vector search latency, and hallucination guardrails'
+          `High-Throughput Serving: vLLM PagedAttention virtual memory KV-cache allocation, continuous batching, and chunked prefill.`,
+          `LLM Evaluation Frameworks: Ragas metrics (Faithfulness, Answer Relevance, Context Precision, Context Recall) and LLM-as-a-Judge benchmarking.`,
+          `System Design for AI: End-to-end architecture of an Enterprise RAG Platform, caching, rate limiting, and cost optimization.`
         ]
       };
     }
 
-    // --- CS FOUNDATIONS & OBSERVABILITY ---
+    // =========================================================================
+    // 5. CS FOUNDATIONS (OS, Networks, Linux, DBMS Internals)
+    // =========================================================================
     const csTopics = [
-      { topic: 'Operating Systems: Processes vs Threads', concept: 'Address spaces, PCB/TCB structures, and context switching cache overhead.' },
-      { topic: 'Operating Systems: CPU Scheduling', concept: 'CFS (Completely Fair Scheduler), Round Robin quantum sizing, and priority inversion.' },
-      { topic: 'Operating Systems: Virtual Memory & Paging', concept: 'MMU translation, page tables, Page Fault traps, and TLB hit ratios.' },
-      { topic: 'Operating Systems: Concurrency & Futex', concept: 'Atomic CAS, kernel futex wait queues, spinlocks vs blocking mutexes.' },
-      { topic: 'Computer Networks: OSI & TCP/IP Model', concept: 'Packet encapsulation, Ethernet MAC framing, and ARP IP resolution.' },
-      { topic: 'Computer Networks: TCP Transport Protocol', concept: '3-way handshake, sliding window flow control, and Reno/Cubic congestion avoidance.' },
-      { topic: 'Computer Networks: TLS 1.3 & DNS', concept: 'Diffie-Hellman ephemeral key exchange, forward secrecy, and DNS hierarchy.' },
-      { topic: 'Linux Systems: Shell & Permissions', concept: 'File descriptors, systemd service units, cron, and sed/awk data parsing.' },
-      { topic: 'Linux Systems: Performance Diagnostics', concept: 'Diagnosing CPU, memory, and disk bottlenecks with htop, vmstat, iostat, and strace.' },
-      { topic: 'Database Internals: Storage & B+ Trees', concept: 'Page layout, write-ahead logging (WAL), buffer pool eviction, and B+ Tree node splitting.' }
+      { topic: 'Operating Systems: Processes vs Threads & Context Switching', concept: 'Separate address spaces vs shared memory, PCB/TCB overhead, CPU register saves, and L1/L2 cache pollution.' },
+      { topic: 'Operating Systems: CPU Scheduling & CFS', concept: 'Linux Completely Fair Scheduler (CFS), red-black vruntime tree, nice values, and priority inversion mitigation.' },
+      { topic: 'Operating Systems: Virtual Memory, Paging & TLB', concept: 'Memory Management Unit (MMU) page table translation, Page Fault traps, swapping, and Translation Lookaside Buffer (TLB) hit ratios.' },
+      { topic: 'Operating Systems: Concurrency, Mutexes & Futex', concept: 'Hardware atomic CAS instructions, test-and-set spinlocks, Linux fast userspace mutex (futex), and deadlock detection.' },
+      { topic: 'Computer Networks: TCP Connection Lifecycle & Handshake', concept: 'TCP 3-way handshake, SYN cookies for flood defense, 4-way FIN teardown, and TIME_WAIT socket exhaustion.' },
+      { topic: 'Computer Networks: TCP Flow & Congestion Control', concept: 'Sliding window buffer sizing, ACK clocking, TCP Slow Start, Congestion Avoidance, Fast Retransmit, and Cubic algorithms.' },
+      { topic: 'Computer Networks: TLS 1.3 Handshake & HTTPS Security', concept: '1-RTT TLS 1.3 handshake, Diffie-Hellman Ephemeral key exchange, Perfect Forward Secrecy (PFS), and Certificate Authorities.' },
+      { topic: 'Linux Systems: File Descriptors, Epoll & I/O Multiplexing', concept: 'Select vs Poll vs Epoll, Edge-Triggered vs Level-Triggered notification, and high-concurrency event loops (Netty, Nginx, Node).' },
+      { topic: 'Linux Systems: Shell Plumbing & System Diagnostics', concept: 'Linux pipes, signals (SIGTERM vs SIGKILL), procfs (/proc), and performance troubleshooting with htop, vmstat, iostat, and strace.' },
+      { topic: 'Database Internals: Storage Engine, WAL & B+ Trees', concept: '8KB page structures, B+ Tree index node splits, Write-Ahead Logging (WAL) for ACID crash recovery, and Buffer Pool LRU eviction.' }
     ];
     cs = csTopics[(d - 1) % csTopics.length];
 
-    // --- HANDS-ON ENGINEERING TASK ---
+    // =========================================================================
+    // 6. HANDS-ON ENGINEERING TASK
+    // =========================================================================
     handsOn = {
-      title: `Day ${d} Actionable Engineering Task`,
-      task: `Implement and verify the day's core components: solve ${dsa.problems[0].title} in Java/Python, execute the Being Zero SQL query, and run the practical hands-on engineering lab task.`,
+      title: `Day ${d} Production Engineering Lab`,
+      task: `Implement and verify today's core components: solve ${dsa.problems[0].title} in Java/Python, execute the SQL query on live data, and verify the backend/AI milestone.`,
       commandOrCode: d % 2 === 0 
         ? `javac Solution.java && java Solution && sqlite3 test.db < query.sql` 
-        : `python -m unittest test_pipeline.py && curl -I http://localhost:8080/actuator/health`,
-      verification: `Verify zero runtime exceptions, 100% test assertions passed, and sub-100ms response latency.`
+        : `python -m unittest test_pipeline.py && curl -s -I http://localhost:8080/actuator/health`,
+      verification: `Ensure zero runtime exceptions, 100% test assertions pass, and response latency is sub-100ms.`
     };
 
-    // --- MOCK INTERVIEW ROUND SETUP (DAYS 121-150) ---
+    // =========================================================================
+    // 7. MOCK INTERVIEW SETUP (DAYS 121-150)
+    // =========================================================================
     if (d >= 121 && d <= 125) {
       mockRound = {
         type: 'DSA Mock',
         durationMinutes: 45,
         simulationGoal: 'Solve 1 Medium + 1 Easy DSA problem in under 45 minutes while explaining thoughts aloud.',
-        rubric: ['Problem understanding & clarifying questions', 'Brute force vs optimal discussion', 'Clean code without syntax bugs', 'Accurate time and space complexity derivation']
+        rubric: ['Problem clarification & constraint verification', 'Brute force vs optimal discussion', 'Clean syntax without IDE assistance', 'Accurate Big-O time and space derivation']
       };
     } else if (d >= 126 && d <= 130) {
       mockRound = {
         type: 'SQL Mock',
         durationMinutes: 30,
         simulationGoal: 'Write 2 complex analytical queries (Window functions, CTEs, Aggregations) in 30 minutes.',
-        rubric: ['Correct JOIN syntax and handling of NULLs', 'Appropriate Window function selection', 'Query optimization & index usage discussion']
+        rubric: ['Correct JOIN syntax and NULL handling', 'Appropriate Window function selection', 'Query optimization & index usage discussion']
       };
     } else if (d >= 131 && d <= 135) {
       mockRound = {
         type: 'CS Fundamentals',
         durationMinutes: 45,
         simulationGoal: 'Rapid-fire Q&A across OS (threads, virtual memory), Computer Networks (TCP, TLS, HTTP), and DBMS (ACID, MVCC).',
-        rubric: ['Clarity of definitions without rambling', 'Connecting OS/Network concepts to real server performance', 'Understanding database isolation anomalies']
+        rubric: ['Precision of definitions without filler words', 'Connecting OS/Network concepts to real server performance', 'Understanding database isolation anomalies']
       };
     } else if (d >= 136 && d <= 140) {
       mockRound = {
@@ -512,85 +505,103 @@ export function generateAll150Days(): DayPlan[] {
       };
     }
 
-    // --- INTERVIEW QUESTIONS WITH TESTING SIGNAL, TRAP & FOLLOWUP ---
+    // =========================================================================
+    // 8. 5 DISTINCT, DAY-SPECIFIC, HIGH-SIGNAL INTERVIEW QUESTIONS (NO TEMPLATES)
+    // =========================================================================
+    const primaryProblem = dsa.problems[0];
+
     questions = [
+      // 1. DSA Technical Question (Problem-Specific)
       {
-        question: `Explain the algorithmic intuition and time/space complexity of today's DSA pattern: ${dsa.pattern}.`,
-        difficulty: 'Medium',
+        question: `In "${primaryProblem.title}", explain the core algorithmic mechanism that improves upon the brute-force approach, and prove its time and space complexity.`,
+        difficulty: primaryProblem.difficulty,
         category: 'DSA',
         points: [
-          `Core recognition signal: identify problem constraints that indicate this pattern.`,
-          `Optimal complexity: explain why this approach eliminates redundant computation.`,
-          `Edge case management: discuss null inputs, single-element collections, and duplicates.`
+          `Brute-force baseline: identify the redundant computations or nested loops that lead to suboptimal runtime.`,
+          `Optimal state mechanism: explain how the pattern (${dsa.pattern}) prunes unnecessary work.`,
+          `Asymptotic derivation: derive the tight Big-O time and auxiliary space bounds under worst-case inputs.`,
+          `Boundary edge cases: verify correctness for empty collections, single elements, negative numbers, or duplicate keys.`
         ],
-        whatInterviewerIsTesting: 'Pattern recognition, clarity of explanation, and Big-O derivation.',
-        commonTrap: 'Jumping straight into code without explaining the algorithmic trade-off first.',
-        commonFollowUp: 'How would your approach change if the dataset cannot fit into memory?'
+        whatInterviewerIsTesting: 'Ability to explain algorithmic intuition clearly, derive Big-O mathematically, and recognize edge cases.',
+        commonTrap: 'Jumping directly to writing code without explaining the algorithmic trade-off or constraint verification first.',
+        commonFollowUp: 'How would you adapt this solution if the input dataset is too large to fit in RAM and must be processed as a stream?'
       },
+
+      // 2. SQL Architecture Question (Topic-Specific)
       {
-        question: `How does the SQL concept "${sql.topic}" impact query performance on multi-million row tables?`,
+        question: `For the SQL topic "${sql.topic}", how does the database query planner execute this operation under the hood, and how do you ensure sub-10ms performance on millions of rows?`,
         difficulty: 'Medium',
         category: 'SQL',
         points: [
-          `Index utilization: explain whether the query uses Index Scans or causes Sequential Table Scans.`,
-          `Memory overhead: discuss tempdb / work_mem spills during sorting and grouping.`,
-          `Optimization: rewrite correlated or nested subqueries into efficient joins or window functions.`
+          `Execution lifecycle: trace the evaluation order (FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> WINDOW -> ORDER BY).`,
+          `Index efficiency: explain whether this query enables Index Scans / Index Only Scans or triggers costly Sequential Scans.`,
+          `Memory overhead: identify when sort operations or aggregations exceed work_mem and spill to temporary disk files.`,
+          `Optimization rewrite: discuss query refactoring (e.g. converting correlated subqueries to CTEs or window functions).`
         ],
-        whatInterviewerIsTesting: 'Understanding relational query execution, indexes, and memory limits.',
-        commonTrap: 'Assuming adding an index always speeds up queries without considering write overhead.',
-        commonFollowUp: 'How does EXPLAIN ANALYZE help identify where the query is spending execution time?'
+        whatInterviewerIsTesting: 'Relational query execution understanding, memory configuration limits, and practical indexing strategy.',
+        commonTrap: 'Assuming indexes always speed up queries without accounting for write amplification on INSERT/UPDATE.',
+        commonFollowUp: 'How does running EXPLAIN (ANALYZE, BUFFERS) help identify buffer cache hits versus disk read bottlenecks?'
       },
+
+      // 3. Backend & Cloud Architecture Question (Topic-Specific)
       {
-        question: `In production backend architecture, how do you handle failure and ensure resilience for ${backendCloud.topic}?`,
+        question: `In production systems implementing "${backendCloud.topic}", how do you design for resilience, high availability, and zero data loss during node failures?`,
         difficulty: 'Hard',
         category: 'Backend',
         points: [
-          `Fault tolerance: apply circuit breakers, retries with exponential backoff, and fallbacks.`,
-          `Data consistency: maintain idempotency keys and transactional outbox patterns.`,
-          `Observability: instrument distributed trace spans and Prometheus counters.`
+          `Fault tolerance & failover: describe how the system detects node failure and safely recovers without cascading outages.`,
+          `Data consistency: explain the transaction isolation level or distributed commit mechanism preventing partial writes.`,
+          `Concurrency & throughput: detail how threads, connection pools, or partitions scale with growing traffic.`,
+          `Observability: identify the key metrics (p99 latency, error rate, queue depth) and distributed trace spans required for monitoring.`
         ],
-        whatInterviewerIsTesting: 'Real-world distributed systems resilience and failure mode mitigation.',
-        commonTrap: 'Suggesting infinite retries without exponential backoff or jitter (causing thundering herds).',
-        commonFollowUp: 'What happens if the circuit breaker trips while thousands of users are checking out?'
+        whatInterviewerIsTesting: 'Senior-level production systems engineering intuition and failure mode mitigation.',
+        commonTrap: 'Proposing simple retries without exponential backoff and jitter, creating self-inflicted DDoS thundering herds.',
+        commonFollowUp: 'What specific metrics in Prometheus or Grafana would trigger an on-call alert for this component?'
       },
+
+      // 4. Python, AI & GenAI Question (Topic-Specific)
       {
-        question: `What are the critical architectural tradeoffs in ${aiMl.topic}?`,
+        question: `Explain the architectural and mathematical principles behind "${aiMl.topic}". What are the critical performance tradeoffs in real-world deployment?`,
         difficulty: 'Hard',
         category: 'AI/ML',
         points: [
-          `Latency vs Quality: balance model parameter size vs inference time and hardware cost.`,
-          `Serving optimizations: utilize quantization (INT8/FP8), model compilation, and batching.`,
-          `Evaluation: prevent training data leakage and measure production drift.`
+          `Core mathematical/system concept: explain the theoretical foundation driving this technique.`,
+          `Performance vs Accuracy tradeoff: discuss how latency, memory footprint, and computational overhead scale.`,
+          `Production failure mode: describe a common real-world failure (e.g. out-of-memory, context dilution, drift) and how to mitigate it.`,
+          `Engineering best practice: explain how to evaluate, benchmark, and monitor this component in production.`
         ],
-        whatInterviewerIsTesting: 'Practical AI engineering trade-offs beyond toy API calls.',
-        commonTrap: 'Believing fine-tuning is always superior to RAG for factual question answering.',
-        commonFollowUp: 'How do you detect when your vector retrieval pipeline is retrieving irrelevant context?'
+        whatInterviewerIsTesting: 'Depth in modern AI/ML engineering beyond trivial API calls or cookie-cutter notebooks.',
+        commonTrap: 'Treating AI models as black boxes without understanding memory consumption, vector search math, or inference costs.',
+        commonFollowUp: 'How do you measure whether a recent model change or prompt optimization genuinely improved output quality without regressions?'
       },
+
+      // 5. CS Fundamentals Question (Systems-Specific)
       {
-        question: `Explain the core computer science mechanism underlying ${cs.topic}.`,
+        question: `Explain the fundamental computer systems mechanism behind "${cs.topic}". How does this primitive affect application runtime performance?`,
         difficulty: 'Medium',
         category: 'CS Fundamentals',
         points: [
-          `Hardware interaction: detail CPU cache lines, registers, or kernel privilege rings.`,
-          `Kernel coordination: contrast user-space execution with kernel-space system calls.`,
-          `Real-world relevance: how high-performance servers (Nginx, Netty, Redis) exploit this mechanism.`
+          `Kernel vs User Space: identify system calls, context switch boundaries, and hardware register preservation.`,
+          `Hardware interaction: detail CPU cache coherence (L1/L2/L3), memory bus bandwidth, or network socket buffer queues.`,
+          `Performance bottleneck: explain why improper usage degrades high-concurrency servers (e.g. lock contention, TLB thrashing, TIME_WAIT).`
         ],
-        whatInterviewerIsTesting: 'Depth of fundamental computer science knowledge and systems intuition.',
-        commonTrap: 'Confusing user-mode threads with kernel-scheduled threads or process boundaries.',
-        commonFollowUp: 'How does this OS primitive impact multi-threaded Java or Python applications?'
+        whatInterviewerIsTesting: 'Low-level computer science intuition and ability to link OS/network internals to application performance.',
+        commonTrap: 'Giving superficial textbook definitions without explaining the actual hardware or OS kernel mechanism.',
+        commonFollowUp: 'How would you inspect or tune this mechanism using standard Linux diagnostic tools (strace, perf, sysctl)?'
       }
     ];
 
-    // --- DELIVERABLE, THEME & OBJECTIVE ---
-    theme = `Day ${d}: ${dsa.pattern} + ${sql.topic} + ${backendCloud.track}`;
+    // =========================================================================
+    // 9. METADATA, WORKLOAD & DELIVERABLES
+    // =========================================================================
+    theme = `Day ${d}: ${dsa.pattern} • ${backendCloud.track} • ${aiMl.track}`;
     objective = isJobMode 
       ? `[JOB MODE] Execute timed ${mockRound?.type || 'Mock Round'}, drill interview defense on ${backendCloud.topic}, and complete rapid problem sprints.`
-      : `Master ${dsa.pattern} in DSA, execute Being Zero ${sql.topic}, configure ${backendCloud.topic}, and evaluate ${aiMl.topic} in high-throughput environments.`;
-    deliverable = `A verified Java/Python solution to the day's DSA problems, executed SQL queries with EXPLAIN plans, and a functioning backend or AI micro-component.`;
+      : `Master ${dsa.pattern} in DSA, execute Being Zero ${sql.topic}, configure ${backendCloud.topic}, and evaluate ${aiMl.topic}.`;
+    deliverable = `A verified solution to ${primaryProblem.title}, executed SQL queries with EXPLAIN plans, and tested backend/AI code.`;
 
-    // --- REAL RESOURCE LINKS ---
     resources = [
-      { title: 'LeetCode Practice Portal', url: dsa.problems[0].url, type: 'code' },
+      { title: 'LeetCode Problem Portal', url: primaryProblem.url, type: 'code' },
       { title: 'PostgreSQL Official Documentation', url: 'https://www.postgresql.org/docs/current/', type: 'doc' },
       { title: 'Spring Boot Documentation', url: 'https://docs.spring.io/spring-boot/index.html', type: 'doc' },
       { title: 'AWS Well-Architected Framework', url: 'https://aws.amazon.com/architecture/well-architected/', type: 'doc' },
@@ -616,16 +627,15 @@ export function generateAll150Days(): DayPlan[] {
       commonFollowUp: q.commonFollowUp
     }));
 
-    // --- 3-TIER REALISTIC DAILY WORKLOAD ---
     const dailyWorkload: DailyWorkloadTiers = {
       mustDo: [
-        `[DSA Core] Solve ${dsa.problems[0].title} (${dsa.problems[0].difficulty}) — pattern: ${dsa.pattern}`,
+        `[DSA Core] Solve ${primaryProblem.title} (${primaryProblem.difficulty}) — pattern: ${dsa.pattern}`,
         `[SQL Core] Execute Being Zero SQL: ${sql.exercise.title} (${sql.exercise.difficulty})`,
         `[Core Concept] Master ${isJobMode ? `Job Mode Simulation: ${mockRound?.type}` : backendCloud.topic}`
       ],
       shouldDo: [
         `[Hands-On Lab] ${handsOn.title}`,
-        `[Interview Prep] Drill top 2 interview flashcards: "${questions[0].question.slice(0, 55)}..." and "${questions[1].question.slice(0, 55)}..."`
+        `[Interview Drill] Master question 1: "${questions[0].question.slice(0, 50)}..." and question 2: "${questions[1].question.slice(0, 50)}..."`
       ],
       optionalDo: [
         dsa.problems.length > 1 ? `[DSA Bonus] Solve secondary problem: ${dsa.problems[1].title}` : `[Code Refactor] Profile memory usage and derive asymptotic bound`,
