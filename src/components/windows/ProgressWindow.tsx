@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProgress } from '../../types';
 import { masterCurriculum } from '../../data/curriculumData';
+import { useAuth } from '../../context/AuthContext';
 
 interface ProgressWindowProps {
   progress: UserProgress;
@@ -23,6 +24,7 @@ export const ProgressWindow: React.FC<ProgressWindowProps> = ({
   onImportBackup,
   onOpenAuthModal
 }) => {
+  const { user, syncStatus, lastSyncedAt, triggerManualSync, importLocalProgress, localStats, openAuthModal } = useAuth();
   const [timerSeconds, setTimerSeconds] = useState<number>(25 * 60); // 25 min default
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
@@ -339,6 +341,97 @@ export const ProgressWindow: React.FC<ProgressWindowProps> = ({
             </label>
           )}
         </div>
+      </div>
+
+      {/* Multi-Device Cloud Synchronization & Migration Center */}
+      <div className="bg-white border border-[#7f9db9] rounded p-3 shadow-xs space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+          <div>
+            <h3 className="font-bold text-xs uppercase text-gray-800 flex items-center gap-1.5">
+              <span>☁️</span>
+              <span>Multi-Device Cloud Synchronization (Laptop 1, Laptop 2, Phone)</span>
+            </h3>
+            <p className="text-[11px] text-gray-500">
+              Personal Supabase cloud sync keeps your completed days, notes, and checklist identical across all your devices.
+            </p>
+          </div>
+          <div>
+            {user ? (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                syncStatus === 'synced' ? 'bg-green-100 text-green-900 border-green-300' :
+                syncStatus === 'syncing' || syncStatus === 'pending' ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                syncStatus === 'offline' ? 'bg-amber-100 text-amber-900 border-amber-300' :
+                'bg-red-100 text-red-900 border-red-300'
+              }`}>
+                {syncStatus === 'synced' && '● Synced to Supabase'}
+                {(syncStatus === 'syncing' || syncStatus === 'pending') && '↻ Syncing...'}
+                {syncStatus === 'offline' && '⚠ Offline (Saved in LocalStorage)'}
+                {syncStatus === 'error' && '✕ Sync Issue'}
+              </span>
+            ) : (
+              <button
+                onClick={openAuthModal}
+                className="xp-button text-xs py-1 px-3 font-bold text-blue-900"
+              >
+                🔑 Log On to Sync Across Devices
+              </button>
+            )}
+          </div>
+        </div>
+
+        {user ? (
+          <div className="space-y-2 pt-1 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-[11px] text-gray-600">
+                Signed in as: <strong className="text-blue-900">{user.email}</strong> • Last Sync:{' '}
+                {lastSyncedAt ? lastSyncedAt.toLocaleTimeString() : 'Just now'}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => triggerManualSync()}
+                  className="xp-button text-xs py-1 px-3 font-bold flex items-center gap-1"
+                >
+                  <span>↻</span>
+                  <span>Sync Now</span>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    const res = await importLocalProgress();
+                    alert(res.message);
+                  }}
+                  className="xp-button text-xs py-1 px-3 font-bold text-amber-950 bg-amber-200 hover:bg-amber-300 flex items-center gap-1"
+                  title="Migrate offline localStorage progress to your cloud account"
+                >
+                  <span>⬆</span>
+                  <span>IMPORT EXISTING LOCAL PROGRESS</span>
+                </button>
+              </div>
+            </div>
+
+            {localStats.hasLocalProgress && (
+              <div className="bg-amber-50 border border-amber-200 p-2 rounded text-[11px] text-amber-900 flex items-center justify-between">
+                <div>
+                  <strong>Local progress detected:</strong> {localStats.completedDaysCount} completed days, {localStats.solvedCount} problems, {localStats.notesCount} notes.
+                </div>
+                <button
+                  onClick={async () => {
+                    const res = await importLocalProgress();
+                    alert(res.message);
+                  }}
+                  className="px-2 py-0.5 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold rounded text-[10px] cursor-pointer"
+                >
+                  Import to Cloud Now
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-[11px] text-gray-600 italic">
+            Currently in local mode. All data is persisted in <code>focusflow_user_progress_v2</code>. Log in to synchronize automatically with your phone.
+          </p>
+        )}
       </div>
 
       {/* Danger Zone: Reset Data */}

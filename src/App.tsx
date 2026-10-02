@@ -164,7 +164,16 @@ function AppContent() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState<boolean>(false);
   const [, setTopZIndex] = useState<number>(20);
 
-  const { user, syncStatus, lastSyncedAt, openAuthModal } = useAuth();
+  const { 
+    user, 
+    syncStatus, 
+    lastSyncedAt, 
+    openAuthModal, 
+    localStats, 
+    showMigrationPrompt, 
+    dismissMigrationPrompt, 
+    importLocalProgress 
+  } = useAuth();
 
   const {
     progress,
@@ -175,13 +184,14 @@ function AppContent() {
     toggleTask,
     toggleProblemSolved,
     toggleQuestionMastered,
+    toggleRevisionItem,
     saveNote,
     addStudyMinutes,
     toggleProjectTask,
     resetAllProgress,
     exportBackup,
     importBackup
-  } = useProgress();
+  } = useProgress(user?.id);
 
   const bringToFront = (id: string) => {
     setActiveWindowId(id);
@@ -325,6 +335,8 @@ function AppContent() {
                 onToggleBookmark={toggleBookmark}
                 onToggleTask={toggleTask}
                 onSaveNote={saveNote}
+                onToggleProblemSolved={toggleProblemSolved}
+                onToggleQuestionMastered={toggleQuestionMastered}
               />
             )}
 
@@ -393,6 +405,7 @@ function AppContent() {
                 onOpenDay={(_d) => {
                   openApp('roadmap');
                 }}
+                onToggleRevisionItem={toggleRevisionItem}
               />
             )}
 
@@ -434,6 +447,48 @@ function AppContent() {
 
       {/* Windows XP User Logon & Cloud Synchronization Modal */}
       <XPAuthModal />
+
+      {/* Existing Local Progress Migration Balloon / Notification */}
+      {user && showMigrationPrompt && localStats.hasLocalProgress && (
+        <div className="fixed top-3 right-3 z-[60] max-w-sm xp-window border-2 border-[#0055ea] shadow-2xl p-3 bg-[#ffffdf] rounded animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <div className="flex items-center gap-1.5 font-bold text-xs text-[#003c74]">
+              <span className="text-base">📦</span>
+              <span>Import Existing Local Progress?</span>
+            </div>
+            <button
+              onClick={dismissMigrationPrompt}
+              className="text-gray-500 hover:text-black text-xs font-bold px-1 cursor-pointer"
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-700 leading-snug mb-2">
+            Found <strong>{localStats.completedDaysCount} completed days</strong>,{' '}
+            <strong>{localStats.solvedCount} problems</strong>, and{' '}
+            <strong>{localStats.notesCount} notes</strong> in your browser's local cache. Import to sync across your phone and other devices?
+          </p>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={dismissMigrationPrompt}
+              className="xp-btn px-2.5 py-1 text-xs cursor-pointer"
+            >
+              Later
+            </button>
+            <button
+              onClick={async () => {
+                const res = await importLocalProgress();
+                alert(res.message);
+                dismissMigrationPrompt();
+              }}
+              className="xp-btn px-3 py-1 text-xs font-bold text-blue-950 bg-amber-400 hover:bg-amber-500 cursor-pointer"
+            >
+              IMPORT EXISTING LOCAL PROGRESS
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

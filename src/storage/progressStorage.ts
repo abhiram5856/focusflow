@@ -2,9 +2,8 @@ import type { UserProgress, BackupPayload } from '../types';
 import { defaultStorageProvider } from './LocalStorageProvider';
 import { 
   CURRENT_SCHEMA_VERSION, 
-  PROGRESS_STORAGE_KEY, 
-  DEMO_PROGRESS_STORAGE_KEY,
-  StorageEnvelope 
+  StorageEnvelope,
+  getProgressStorageKey
 } from './types';
 
 export const initialProgress: UserProgress = {
@@ -14,6 +13,7 @@ export const initialProgress: UserProgress = {
   dayTasks: {},
   solvedProblems: {},
   masteredQuestions: {},
+  revisionItems: {},
   currentStreak: 1,
   longestStreak: 1,
   lastActiveDate: new Date().toISOString().split('T')[0],
@@ -30,11 +30,19 @@ Core Principle: Consistent simultaneous execution across DSA, SQL, Spring Boot, 
 - Python memory model PyObject reference counting verified.
 `
   },
+  notesTimestamps: {},
   projectChecklist: {
     'project-1': { 'task-0': true, 'task-1': false },
     'project-2': { 'task-0': false },
     'project-3': { 'task-0': false }
-  }
+  },
+  dayCompletionTimestamps: {},
+  bookmarkTimestamps: {},
+  taskTimestamps: {},
+  problemTimestamps: {},
+  questionTimestamps: {},
+  revisionTimestamps: {},
+  projectTimestamps: {}
 };
 
 export const demoProgress: UserProgress = {
@@ -55,6 +63,7 @@ export const demoProgress: UserProgress = {
     'q-java-1': true,
     'q-sql-1': true
   },
+  revisionItems: {},
   currentStreak: 3,
   longestStreak: 3,
   lastActiveDate: new Date().toISOString().split('T')[0],
@@ -64,27 +73,35 @@ export const demoProgress: UserProgress = {
 This is a read-only demo profile. Personal user progress is safely stored in private local storage and cannot be viewed or modified in demo mode.
 `
   },
+  notesTimestamps: {},
   projectChecklist: {
     'project-1': { 'task-0': true, 'task-1': true, 'task-2': false },
     'project-2': { 'task-0': false },
     'project-3': { 'task-0': false }
-  }
+  },
+  dayCompletionTimestamps: {},
+  bookmarkTimestamps: {},
+  taskTimestamps: {},
+  problemTimestamps: {},
+  questionTimestamps: {},
+  revisionTimestamps: {},
+  projectTimestamps: {}
 };
 
 /**
- * Loads user progress from storage with schema migration support.
+ * Loads user progress from storage with schema migration support and user-scoping.
  */
-export function loadUserProgress(isDemoMode: boolean = false): UserProgress {
-  const key = isDemoMode ? DEMO_PROGRESS_STORAGE_KEY : PROGRESS_STORAGE_KEY;
+export function loadUserProgress(isDemoMode: boolean = false, userId?: string | null): UserProgress {
+  const key = getProgressStorageKey(userId, isDemoMode);
   const envelope = defaultStorageProvider.getItem<StorageEnvelope<UserProgress> | UserProgress>(key);
 
   if (!envelope) {
-    // Check legacy v2 key from previous iteration if user has existing progress
-    if (!isDemoMode) {
+    // If guest and legacy exists, migrate legacy
+    if (!isDemoMode && !userId) {
       const legacy = defaultStorageProvider.getItem<UserProgress>('ai_engineer_150_progress_v2');
       if (legacy) {
         const migrated: UserProgress = { ...initialProgress, ...legacy };
-        saveUserProgress(migrated, false);
+        saveUserProgress(migrated, false, userId);
         return migrated;
       }
     }
@@ -106,19 +123,29 @@ export function loadUserProgress(isDemoMode: boolean = false): UserProgress {
     dayTasks: progressData.dayTasks || {},
     solvedProblems: progressData.solvedProblems || {},
     masteredQuestions: progressData.masteredQuestions || {},
+    revisionItems: progressData.revisionItems || {},
     notes: { ...initialProgress.notes, ...(progressData.notes || {}) },
-    projectChecklist: progressData.projectChecklist || initialProgress.projectChecklist
+    notesTimestamps: progressData.notesTimestamps || {},
+    projectChecklist: progressData.projectChecklist || initialProgress.projectChecklist,
+    dayCompletionTimestamps: progressData.dayCompletionTimestamps || {},
+    bookmarkTimestamps: progressData.bookmarkTimestamps || {},
+    taskTimestamps: progressData.taskTimestamps || {},
+    problemTimestamps: progressData.problemTimestamps || {},
+    questionTimestamps: progressData.questionTimestamps || {},
+    revisionTimestamps: progressData.revisionTimestamps || {},
+    projectTimestamps: progressData.projectTimestamps || {}
   };
 }
 
 /**
- * Persists user progress inside a versioned envelope.
+ * Persists user progress inside a versioned envelope scoped by user.
  */
-export function saveUserProgress(progress: UserProgress, isDemoMode: boolean = false): void {
-  const key = isDemoMode ? DEMO_PROGRESS_STORAGE_KEY : PROGRESS_STORAGE_KEY;
+export function saveUserProgress(progress: UserProgress, isDemoMode: boolean = false, userId?: string | null): void {
+  const key = getProgressStorageKey(userId, isDemoMode);
   const envelope: StorageEnvelope<UserProgress> = {
     version: CURRENT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
+    ownerUserId: userId || null,
     data: progress
   };
   defaultStorageProvider.setItem(key, envelope);
@@ -140,7 +167,7 @@ export function exportBackupJson(progress: UserProgress): string {
 /**
  * Imports and validates a JSON backup payload.
  */
-export function importBackupJson(jsonString: string): UserProgress {
+export function importBackupJson(jsonString: string, userId?: string | null): UserProgress {
   try {
     const parsed = JSON.parse(jsonString);
     if (!parsed || typeof parsed !== 'object') {
@@ -162,11 +189,20 @@ export function importBackupJson(jsonString: string): UserProgress {
       dayTasks: importedProgress.dayTasks || {},
       solvedProblems: importedProgress.solvedProblems || {},
       masteredQuestions: importedProgress.masteredQuestions || {},
+      revisionItems: importedProgress.revisionItems || {},
       notes: { ...initialProgress.notes, ...(importedProgress.notes || {}) },
-      projectChecklist: importedProgress.projectChecklist || initialProgress.projectChecklist
+      notesTimestamps: importedProgress.notesTimestamps || {},
+      projectChecklist: importedProgress.projectChecklist || initialProgress.projectChecklist,
+      dayCompletionTimestamps: importedProgress.dayCompletionTimestamps || {},
+      bookmarkTimestamps: importedProgress.bookmarkTimestamps || {},
+      taskTimestamps: importedProgress.taskTimestamps || {},
+      problemTimestamps: importedProgress.problemTimestamps || {},
+      questionTimestamps: importedProgress.questionTimestamps || {},
+      revisionTimestamps: importedProgress.revisionTimestamps || {},
+      projectTimestamps: importedProgress.projectTimestamps || {}
     };
 
-    saveUserProgress(validated, false);
+    saveUserProgress(validated, false, userId);
     return validated;
   } catch (err: any) {
     throw new Error(`Backup restore failed: ${err.message || 'Corrupt file'}`);
@@ -176,7 +212,8 @@ export function importBackupJson(jsonString: string): UserProgress {
 /**
  * Clears private local storage progress.
  */
-export function resetStoredProgress(isDemoMode: boolean = false): void {
-  const key = isDemoMode ? DEMO_PROGRESS_STORAGE_KEY : PROGRESS_STORAGE_KEY;
+export function resetStoredProgress(isDemoMode: boolean = false, userId?: string | null): void {
+  const key = getProgressStorageKey(userId, isDemoMode);
   defaultStorageProvider.removeItem(key);
 }
+

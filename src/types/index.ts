@@ -169,12 +169,23 @@ export interface UserProgress {
   }>;
   solvedProblems: Record<string, boolean>;
   masteredQuestions: Record<string, boolean>;
+  revisionItems?: Record<string, boolean>;
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: string;
   studyMinutes: number;
   notes: Record<string, string>;
+  notesTimestamps?: Record<string, string>;
   projectChecklist: Record<string, Record<string, boolean>>;
+
+  // Granular Entity-Level Timestamps for Conflict Resolution & Deletion Semantics
+  dayCompletionTimestamps?: Record<number, { completed: boolean; updatedAt: string }>;
+  bookmarkTimestamps?: Record<number, { bookmarked: boolean; updatedAt: string }>;
+  taskTimestamps?: Record<number, Record<string, { done: boolean; updatedAt: string }>>;
+  problemTimestamps?: Record<string, { solved: boolean; updatedAt: string }>;
+  questionTimestamps?: Record<string, { mastered: boolean; updatedAt: string }>;
+  revisionTimestamps?: Record<string, { completed: boolean; updatedAt: string }>;
+  projectTimestamps?: Record<string, Record<string, { completed: boolean; updatedAt: string }>>;
 }
 
 export interface AppSettings {

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
-import { syncManager, type SyncStatus } from '../storage/syncManager';
+import { syncManager, type SyncStatus, type LocalProgressStats } from '../storage/syncManager';
 import type { UserProgress } from '../types';
 
 interface AuthContextType {
@@ -21,7 +21,10 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
   signOut: () => Promise<void>;
   triggerManualSync: () => Promise<boolean>;
-  importLocalProgress: () => Promise<{ success: boolean; message: string }>;
+  importLocalProgress: () => Promise<{ success: boolean; message: string; details?: string }>;
+  localStats: LocalProgressStats;
+  showMigrationPrompt: boolean;
+  dismissMigrationPrompt: () => void;
   onLoginProgressSync?: (callback: (merged: UserProgress) => void) => () => void;
 }
 
@@ -38,8 +41,17 @@ export const AuthProvider: React.FC<{
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('unconfigured');
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
+  const [localStats, setLocalStats] = useState<LocalProgressStats>(() => syncManager.detectLocalProgress());
 
   const isConfigured = isSupabaseConfigured();
+
+  // Refresh local stats whenever called
+  const refreshLocalStats = useCallback(() => {
+    const stats = syncManager.detectLocalProgress();
+    setLocalStats(stats);
+    return stats;
+  }, []);
 
   // Subscribe to syncManager status changes
   useEffect(() => {
@@ -66,6 +78,11 @@ export const AuthProvider: React.FC<{
 
       if (session?.user) {
         syncManager.setUserId(session.user.id);
+        const stats = refreshLocalStats();
+        if (stats.hasLocalProgress) {
+          setShowMigrationPrompt(true);
+        }
+
         // Automatic pull and non-destructive merge on initial app load
         syncManager.pullAndMergeOnLogin(session.user.id).then(merged => {
           if (onProgressLoaded) {
@@ -84,22 +101,29 @@ export const AuthProvider: React.FC<{
 
       if (event === 'SIGNED_IN' && session?.user) {
         syncManager.setUserId(session.user.id);
+        const stats = refreshLocalStats();
+        if (stats.hasLocalProgress) {
+          setShowMigrationPrompt(true);
+        }
+
         const merged = await syncManager.pullAndMergeOnLogin(session.user.id);
         if (onProgressLoaded) {
           onProgressLoaded(merged);
         }
       } else if (event === 'SIGNED_OUT') {
         syncManager.setUserId(null);
+        setShowMigrationPrompt(false);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [isConfigured, onProgressLoaded]);
+  }, [isConfigured, onProgressLoaded, refreshLocalStats]);
 
   const openAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
   const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
+  const dismissMigrationPrompt = useCallback(() => setShowMigrationPrompt(false), []);
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!isConfigured) {
@@ -180,6 +204,7 @@ export const AuthProvider: React.FC<{
     setUser(null);
     setSession(null);
     syncManager.setUserId(null);
+    setShowMigrationPrompt(false);
   };
 
   const triggerManualSync = async () => {
@@ -190,7 +215,9 @@ export const AuthProvider: React.FC<{
     if (!user) {
       return { success: false, message: 'You must be logged in to import progress to cloud.' };
     }
-    return await syncManager.importLocalProgressToCloud(user.id);
+    const res = await syncManager.importLocalProgressToCloud(user.id);
+    refreshLocalStats();
+    return res;
   };
 
   return (
@@ -212,7 +239,10 @@ export const AuthProvider: React.FC<{
         resetPassword,
         signOut,
         triggerManualSync,
-        importLocalProgress
+        importLocalProgress,
+        localStats,
+        showMigrationPrompt,
+        dismissMigrationPrompt
       }}
     >
       {children}

@@ -10,6 +10,8 @@ interface DayDetailModalProps {
   onToggleTask: (day: number, task: 'dsa' | 'sql' | 'backendCloud' | 'aiMl' | 'cs' | 'handsOn' | 'questions' | 'deliverable') => void;
   onSaveNote: (key: string, content: string) => void;
   onSelectDay: (day: number) => void;
+  onToggleProblemSolved?: (title: string) => void;
+  onToggleQuestionMastered?: (questionId: string) => void;
 }
 
 export const DayDetailModal: React.FC<DayDetailModalProps> = ({
@@ -20,7 +22,9 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
   onToggleBookmark,
   onToggleTask,
   onSaveNote,
-  onSelectDay
+  onSelectDay,
+  onToggleProblemSolved,
+  onToggleQuestionMastered
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'dsa' | 'sql' | 'backend' | 'ai' | 'questions' | 'notes'>('overview');
   const [revealedQuestions, setRevealedQuestions] = useState<Record<number, boolean>>({});
@@ -223,13 +227,12 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   ].map(item => (
                     <label
                       key={item.key}
-                      onClick={() => onToggleTask(dayPlan.day, item.key as any)}
                       className="flex items-center gap-2 p-1.5 bg-white border border-gray-200 rounded cursor-pointer hover:bg-blue-50/50"
                     >
                       <input
                         type="checkbox"
                         checked={dayTasks[item.key as keyof typeof dayTasks]}
-                        onChange={() => {}}
+                        onChange={() => onToggleTask(dayPlan.day, item.key as any)}
                         className="rounded text-blue-600 cursor-pointer"
                       />
                       <span className="text-xs font-medium text-gray-800">{item.label}</span>
@@ -356,14 +359,28 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                         </div>
                         {prob.description && <div className="text-xs text-gray-500 mt-0.5">{prob.description}</div>}
                       </div>
-                      <a
-                        href={prob.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 bg-[#245edb] hover:bg-[#1941a5] text-white text-xs font-bold rounded shadow-xs shrink-0 ml-2"
-                      >
-                        [💻 Solve on {prob.platform}] ↗
-                      </a>
+                      <div className="flex items-center gap-2 shrink-0 ml-2">
+                        {onToggleProblemSolved && (
+                          <button
+                            onClick={() => onToggleProblemSolved(prob.title)}
+                            className={`px-2.5 py-1 text-xs font-bold rounded cursor-pointer transition-colors ${
+                              progress.solvedProblems[prob.title]
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                            }`}
+                          >
+                            {progress.solvedProblems[prob.title] ? '✓ Solved' : 'Mark Solved'}
+                          </button>
+                        )}
+                        <a
+                          href={prob.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 bg-[#245edb] hover:bg-[#1941a5] text-white text-xs font-bold rounded shadow-xs"
+                        >
+                          [💻 {prob.platform}] ↗
+                        </a>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -460,9 +477,25 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                     onClick={() => toggleQuestion(i)}
                     className="p-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between cursor-pointer border-b"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap flex-1">
                       <span className="font-bold text-blue-600">Q{i + 1}.</span>
                       <span className="font-semibold text-xs sm:text-sm text-gray-900">{q.question}</span>
+                      {onToggleQuestionMastered && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleQuestionMastered(q.id || q.question);
+                          }}
+                          className={`text-[10px] px-2 py-0.5 rounded font-bold transition-colors cursor-pointer ${
+                            progress.masteredQuestions[q.id || q.question]
+                              ? 'bg-amber-400 text-amber-950 font-black'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          {progress.masteredQuestions[q.id || q.question] ? '★ Mastered' : '☆ Mark Mastered'}
+                        </button>
+                      )}
                     </div>
                     <span className="text-xs text-gray-500 shrink-0 ml-2 font-mono">
                       {revealedQuestions[i] ? '▲ Hide' : '▼ Reveal Answer'}

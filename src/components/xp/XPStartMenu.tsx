@@ -198,7 +198,21 @@ export const XPStartMenu: React.FC<XPStartMenuProps> = ({
             </div>
           </button>
 
-          <div className="mt-auto pt-2 border-t border-[#b2cdec]">
+          <div className="mt-auto pt-2 border-t border-[#b2cdec] space-y-1">
+            <button
+              onClick={() => {
+                if (onOpenAuthModal) onOpenAuthModal();
+                onClose();
+              }}
+              className="w-full text-left p-1.5 rounded hover:bg-[#2f71eb] hover:text-white flex items-center gap-2 text-xs text-[#00138c] transition-colors"
+            >
+              <span className="text-base">☁️</span>
+              <div>
+                <div className="font-bold">Sync & Devices</div>
+                <div className="text-[10px] opacity-75">Multi-device cloud sync</div>
+              </div>
+            </button>
+
             <button
               onClick={() => {
                 onResetProgress();

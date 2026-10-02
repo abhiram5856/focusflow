@@ -17,7 +17,8 @@ export const XPAuthModal: React.FC = () => {
     resetPassword,
     signOut,
     triggerManualSync,
-    importLocalProgress
+    importLocalProgress,
+    localStats
   } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -206,6 +207,43 @@ export const XPAuthModal: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Migration Banner if local progress is detected */}
+              {localStats.hasLocalProgress && (
+                <div className="p-3 bg-[#ffffdf] border-2 border-[#e6b800] rounded shadow-xs space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8a6d00]">
+                    <span className="text-base">📦</span>
+                    <span>Existing Local Progress Detected (`focusflow_user_progress_v2`)</span>
+                  </div>
+                  <div className="text-[11px] text-gray-700 space-y-1">
+                    <p>
+                      We detected existing offline preparation data stored in this browser:
+                    </p>
+                    <div className="flex flex-wrap gap-2 py-1">
+                      <span className="bg-amber-100 border border-amber-300 px-2 py-0.5 rounded font-bold text-amber-900">
+                        {localStats.completedDaysCount} Completed Days
+                      </span>
+                      <span className="bg-blue-100 border border-blue-300 px-2 py-0.5 rounded font-bold text-blue-900">
+                        {localStats.solvedCount} Problems Solved
+                      </span>
+                      <span className="bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded font-bold text-emerald-900">
+                        {localStats.notesCount} Study Notes
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleImportLocal}
+                    disabled={importing}
+                    className="w-full xp-btn py-1.5 px-3 font-bold text-xs bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 border border-amber-600 shadow flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>⬆</span>
+                    <span>{importing ? 'Importing & Merging...' : 'IMPORT EXISTING LOCAL PROGRESS'}</span>
+                  </button>
+                  <p className="text-[10px] text-gray-500 italic">
+                    Safely merges your local progress with your cloud account so Laptop 1, Laptop 2, and Phone have identical progress.
+                  </p>
+                </div>
+              )}
 
               {/* Sync Actions */}
               <div className="space-y-2">

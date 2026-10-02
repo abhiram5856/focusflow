@@ -35,12 +35,21 @@ export const XPWindow: React.FC<XPWindowProps> = ({
 }) => {
   const [position, setPosition] = useState(initialPosition);
   const [size] = useState(initialSize);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const isDraggingRef = useRef(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     onFocus();
-    if (isMaximized) return;
+    if (isMaximized || isMobile) return;
     isDraggingRef.current = true;
     dragOffsetRef.current = {
       x: e.clientX - position.x,
@@ -49,7 +58,7 @@ export const XPWindow: React.FC<XPWindowProps> = ({
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDraggingRef.current || isMaximized) return;
+    if (!isDraggingRef.current || isMaximized || isMobile) return;
     const newX = Math.max(0, Math.min(window.innerWidth - 100, e.clientX - dragOffsetRef.current.x));
     const newY = Math.max(0, Math.min(window.innerHeight - 80, e.clientY - dragOffsetRef.current.y));
     setPosition({ x: newX, y: newY });
@@ -66,11 +75,13 @@ export const XPWindow: React.FC<XPWindowProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isMaximized]);
+  }, [isMaximized, isMobile]);
 
   if (!isOpen || isMinimized) return null;
 
-  const style: React.CSSProperties = isMaximized
+  const effectiveMaximized = isMaximized || isMobile;
+
+  const style: React.CSSProperties = effectiveMaximized
     ? {
         position: 'fixed',
         left: 0,

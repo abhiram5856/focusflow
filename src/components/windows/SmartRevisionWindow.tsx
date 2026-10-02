@@ -5,11 +5,13 @@ import { UserProgress } from '../../types';
 interface SmartRevisionWindowProps {
   progress: UserProgress;
   onOpenDay: (day: number) => void;
+  onToggleRevisionItem?: (key: string) => void;
 }
 
 export const SmartRevisionWindow: React.FC<SmartRevisionWindowProps> = ({
   progress,
-  onOpenDay
+  onOpenDay,
+  onToggleRevisionItem
 }) => {
   // Current active day is max completed day + 1 or 1
   const currentDay = Math.min(150, Math.max(1, (progress.completedDays[progress.completedDays.length - 1] || 0) + 1));
@@ -76,35 +78,51 @@ export const SmartRevisionWindow: React.FC<SmartRevisionWindowProps> = ({
 
         {revisionItems.length > 0 ? (
           <div className="space-y-2">
-            {revisionItems.map(item => (
-              <div
-                key={item.dayNum}
-                className="border border-indigo-200 bg-indigo-50/40 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-indigo-50 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold px-2 py-0.5 bg-indigo-600 text-white rounded text-[10px]">
-                      {item.interval}
-                    </span>
-                    <span className="font-bold text-sm text-gray-900">
-                      Day {item.dayNum}: {item.plan?.theme}
-                    </span>
+            {revisionItems.map(item => {
+              const revKey = `day-${selectedDayToInspect}-rev-${item.dayNum}`;
+              const isRevised = Boolean(progress.revisionItems?.[revKey]);
+              return (
+                <div
+                  key={item.dayNum}
+                  className="border border-indigo-200 bg-indigo-50/40 rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-indigo-50 transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold px-2 py-0.5 bg-indigo-600 text-white rounded text-[10px]">
+                        {item.interval}
+                      </span>
+                      <span className="font-bold text-sm text-gray-900">
+                        Day {item.dayNum}: {item.plan?.theme}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-700 space-y-0.5">
+                      <div><strong>DSA Pattern:</strong> {item.plan?.dsaTrack.pattern}</div>
+                      <div><strong>SQL Topic:</strong> {item.plan?.sqlTrack.topic}</div>
+                      <div><strong>Key Concept:</strong> {item.plan?.csFoundationTrack.concept}</div>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-700 space-y-0.5">
-                    <div><strong>DSA Pattern:</strong> {item.plan?.dsaTrack.pattern}</div>
-                    <div><strong>SQL Topic:</strong> {item.plan?.sqlTrack.topic}</div>
-                    <div><strong>Key Concept:</strong> {item.plan?.csFoundationTrack.concept}</div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                    {onToggleRevisionItem && (
+                      <button
+                        onClick={() => onToggleRevisionItem(revKey)}
+                        className={`xp-button text-xs py-1 px-3 font-bold transition-colors cursor-pointer ${
+                          isRevised ? 'bg-emerald-600 text-white' : 'text-gray-700'
+                        }`}
+                      >
+                        {isRevised ? '✓ Revised' : 'Mark Revised'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onOpenDay(item.dayNum)}
+                      className="xp-button text-xs py-1 px-3 font-bold shrink-0 text-blue-900"
+                    >
+                      Review Day {item.dayNum} Plan ▶
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => onOpenDay(item.dayNum)}
-                  className="xp-button text-xs py-1 px-3 font-bold shrink-0 self-start sm:self-center"
-                >
-                  Review Day {item.dayNum} Plan ▶
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="h-32 flex items-center justify-center text-gray-400 italic">

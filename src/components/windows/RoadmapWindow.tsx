@@ -9,6 +9,8 @@ interface RoadmapWindowProps {
   onToggleBookmark: (day: number) => void;
   onToggleTask: (day: number, task: 'dsa' | 'sql' | 'backendCloud' | 'aiMl' | 'cs' | 'handsOn' | 'questions' | 'deliverable') => void;
   onSaveNote: (key: string, content: string) => void;
+  onToggleProblemSolved?: (title: string) => void;
+  onToggleQuestionMastered?: (questionId: string) => void;
 }
 
 export const RoadmapWindow: React.FC<RoadmapWindowProps> = ({
@@ -16,7 +18,9 @@ export const RoadmapWindow: React.FC<RoadmapWindowProps> = ({
   onToggleComplete,
   onToggleBookmark,
   onToggleTask,
-  onSaveNote
+  onSaveNote,
+  onToggleProblemSolved,
+  onToggleQuestionMastered
 }) => {
   const [selectedDay, setSelectedDay] = useState<DayPlan | null>(null);
   const [stageFilter, setStageFilter] = useState<string>('all');
@@ -242,6 +246,8 @@ export const RoadmapWindow: React.FC<RoadmapWindowProps> = ({
           onToggleBookmark={onToggleBookmark}
           onToggleTask={onToggleTask}
           onSaveNote={onSaveNote}
+          onToggleProblemSolved={onToggleProblemSolved}
+          onToggleQuestionMastered={onToggleQuestionMastered}
           onSelectDay={(dayNum) => {
             const nextDay = masterCurriculum.find(d => d.day === dayNum);
             if (nextDay) setSelectedDay(nextDay);

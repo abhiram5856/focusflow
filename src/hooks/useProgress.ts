@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { UserProgress, AppSettings } from '../types';
 import confetti from 'canvas-confetti';
 import { 
@@ -14,9 +14,16 @@ import {
 
 import { syncManager } from '../storage/syncManager';
 
-export function useProgress() {
+export function useProgress(userId?: string | null) {
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
-  const [progress, setProgress] = useState<UserProgress>(() => loadUserProgress(settings.isDemoMode));
+  const [progress, setProgress] = useState<UserProgress>(() => loadUserProgress(settings.isDemoMode, userId));
+  const isReceivingRemoteUpdateRef = useRef(false);
+
+  // When user identity changes (login/logout), reload the user-scoped progress
+  useEffect(() => {
+    if (settings.isDemoMode) return;
+    setProgress(loadUserProgress(false, userId));
+  }, [userId, settings.isDemoMode]);
 
   // Persist settings whenever changed
   useEffect(() => {
@@ -25,6 +32,11 @@ export function useProgress() {
 
   // Persist progress whenever updated (instant offline-first local cache + debounced cloud sync)
   useEffect(() => {
+    if (isReceivingRemoteUpdateRef.current) {
+      isReceivingRemoteUpdateRef.current = false;
+      return;
+    }
+
     if (settings.isDemoMode) {
       saveUserProgress(progress, true);
     } else {
@@ -35,6 +47,7 @@ export function useProgress() {
   // Listen to background cloud sync / merge updates
   useEffect(() => {
     const unsub = syncManager.onProgressUpdated((mergedProgress) => {
+      isReceivingRemoteUpdateRef.current = true;
       setProgress(mergedProgress);
     });
     return unsub;
@@ -42,6 +55,7 @@ export function useProgress() {
 
   // Direct progress updater when cloud state is merged
   const setFullProgress = useCallback((newProgress: UserProgress) => {
+    isReceivingRemoteUpdateRef.current = true;
     setProgress(newProgress);
   }, []);
 
@@ -50,10 +64,10 @@ export function useProgress() {
     setSettings(prev => {
       const nextDemo = enabled !== undefined ? enabled : !prev.isDemoMode;
       const nextSettings = { ...prev, isDemoMode: nextDemo };
-      setProgress(loadUserProgress(nextDemo));
+      setProgress(loadUserProgress(nextDemo, userId));
       return nextSettings;
     });
-  }, []);
+  }, [userId]);
 
   // Streak verification logic
   useEffect(() => {
@@ -87,12 +101,14 @@ export function useProgress() {
   }, [settings.isDemoMode, progress.lastActiveDate]);
 
   const toggleDayCompletion = (day: number) => {
+    const now = new Date().toISOString();
     setProgress(prev => {
       const isCompleted = prev.completedDays.includes(day);
+      const nextState = !isCompleted;
       let newCompleted: number[];
       let newInProgress = prev.inProgressDays;
 
-      if (isCompleted) {
+      if (!nextState) {
         newCompleted = prev.completedDays.filter(d => d !== day);
       } else {
         newCompleted = [...prev.completedDays, day].sort((a, b) => a - b);
@@ -113,24 +129,35 @@ export function useProgress() {
       return {
         ...prev,
         completedDays: newCompleted,
-        inProgressDays: newInProgress
+        inProgressDays: newInProgress,
+        dayCompletionTimestamps: {
+          ...(prev.dayCompletionTimestamps || {}),
+          [day]: { completed: nextState, updatedAt: now }
+        }
       };
     });
   };
 
   const toggleBookmark = (day: number) => {
+    const now = new Date().toISOString();
     setProgress(prev => {
       const isBookmarked = prev.bookmarkedDays.includes(day);
+      const nextState = !isBookmarked;
       return {
         ...prev,
-        bookmarkedDays: isBookmarked
-          ? prev.bookmarkedDays.filter(d => d !== day)
-          : [...prev.bookmarkedDays, day]
+        bookmarkedDays: nextState
+          ? [...prev.bookmarkedDays, day].sort((a, b) => a - b)
+          : prev.bookmarkedDays.filter(d => d !== day),
+        bookmarkTimestamps: {
+          ...(prev.bookmarkTimestamps || {}),
+          [day]: { bookmarked: nextState, updatedAt: now }
+        }
       };
     });
   };
 
   const toggleTask = (day: number, taskKey: 'dsa' | 'sql' | 'backendCloud' | 'aiMl' | 'cs' | 'handsOn' | 'questions' | 'deliverable') => {
+    const now = new Date().toISOString();
     setProgress(prev => {
       const currentDayTasks = prev.dayTasks[day] || {
         dsa: false,
@@ -143,17 +170,25 @@ export function useProgress() {
         deliverable: false
       };
 
+      const nextTaskState = !currentDayTasks[taskKey];
       const updatedDayTasks = {
         ...currentDayTasks,
-        [taskKey]: !currentDayTasks[taskKey]
+        [taskKey]: nextTaskState
       };
 
       // Auto mark completed if all 8 tasks checked
       const allDone = Object.values(updatedDayTasks).every(Boolean);
       let completedDays = prev.completedDays;
+      let dayTimestamps = prev.dayCompletionTimestamps || {};
       if (allDone && !completedDays.includes(day)) {
         completedDays = [...completedDays, day].sort((a, b) => a - b);
+        dayTimestamps = {
+          ...dayTimestamps,
+          [day]: { completed: true, updatedAt: now }
+        };
       }
+
+      const dayTaskTimestamps = prev.taskTimestamps?.[day] || {};
 
       return {
         ...prev,
@@ -161,39 +196,87 @@ export function useProgress() {
           ...prev.dayTasks,
           [day]: updatedDayTasks
         },
-        completedDays
+        completedDays,
+        dayCompletionTimestamps: dayTimestamps,
+        taskTimestamps: {
+          ...(prev.taskTimestamps || {}),
+          [day]: {
+            ...dayTaskTimestamps,
+            [taskKey]: { done: nextTaskState, updatedAt: now }
+          }
+        }
       };
     });
   };
 
   const toggleProblemSolved = (problemTitle: string) => {
-    setProgress(prev => ({
-      ...prev,
-      solvedProblems: {
-        ...prev.solvedProblems,
-        [problemTitle]: !prev.solvedProblems[problemTitle]
-      }
-    }));
+    const now = new Date().toISOString();
+    setProgress(prev => {
+      const nextSolved = !prev.solvedProblems[problemTitle];
+      return {
+        ...prev,
+        solvedProblems: {
+          ...prev.solvedProblems,
+          [problemTitle]: nextSolved
+        },
+        problemTimestamps: {
+          ...(prev.problemTimestamps || {}),
+          [problemTitle]: { solved: nextSolved, updatedAt: now }
+        }
+      };
+    });
   };
 
   const toggleQuestionMastered = (questionId: string) => {
-    setProgress(prev => ({
-      ...prev,
-      masteredQuestions: {
-        ...prev.masteredQuestions,
-        [questionId]: !prev.masteredQuestions[questionId]
-      }
-    }));
+    const now = new Date().toISOString();
+    setProgress(prev => {
+      const nextMastered = !prev.masteredQuestions[questionId];
+      return {
+        ...prev,
+        masteredQuestions: {
+          ...prev.masteredQuestions,
+          [questionId]: nextMastered
+        },
+        questionTimestamps: {
+          ...(prev.questionTimestamps || {}),
+          [questionId]: { mastered: nextMastered, updatedAt: now }
+        }
+      };
+    });
   };
 
   const saveNote = (key: string, content: string) => {
+    const now = new Date().toISOString();
     setProgress(prev => ({
       ...prev,
       notes: {
         ...prev.notes,
         [key]: content
+      },
+      notesTimestamps: {
+        ...(prev.notesTimestamps || {}),
+        [key]: now
       }
     }));
+  };
+
+  const toggleRevisionItem = (revKey: string) => {
+    const now = new Date().toISOString();
+    setProgress(prev => {
+      const current = prev.revisionItems || {};
+      const nextState = !current[revKey];
+      return {
+        ...prev,
+        revisionItems: {
+          ...current,
+          [revKey]: nextState
+        },
+        revisionTimestamps: {
+          ...(prev.revisionTimestamps || {}),
+          [revKey]: { completed: nextState, updatedAt: now }
+        }
+      };
+    });
   };
 
   const addStudyMinutes = (mins: number) => {
@@ -204,15 +287,25 @@ export function useProgress() {
   };
 
   const toggleProjectTask = (projectId: string, taskId: string) => {
+    const now = new Date().toISOString();
     setProgress(prev => {
       const projectTasks = prev.projectChecklist[projectId] || {};
+      const nextDone = !projectTasks[taskId];
+      const projTimestamps = prev.projectTimestamps?.[projectId] || {};
       return {
         ...prev,
         projectChecklist: {
           ...prev.projectChecklist,
           [projectId]: {
             ...projectTasks,
-            [taskId]: !projectTasks[taskId]
+            [taskId]: nextDone
+          }
+        },
+        projectTimestamps: {
+          ...(prev.projectTimestamps || {}),
+          [projectId]: {
+            ...projTimestamps,
+            [taskId]: { completed: nextDone, updatedAt: now }
           }
         }
       };
@@ -222,7 +315,7 @@ export function useProgress() {
   const resetAllProgress = () => {
     if (window.confirm('Are you sure you want to reset all preparation progress? This action cannot be undone.')) {
       setProgress(initialProgress);
-      resetStoredProgress(settings.isDemoMode);
+      resetStoredProgress(settings.isDemoMode, userId);
     }
   };
 
@@ -246,7 +339,7 @@ export function useProgress() {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          const restored = importBackupJson(content);
+          const restored = importBackupJson(content, userId);
           setProgress(restored);
           resolve(true);
         } catch (err) {
@@ -271,6 +364,7 @@ export function useProgress() {
     saveNote,
     addStudyMinutes,
     toggleProjectTask,
+    toggleRevisionItem,
     resetAllProgress,
     exportBackup,
     importBackup,
