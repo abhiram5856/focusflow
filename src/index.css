@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Tahoma', 'Segoe UI', Geneva, Verdana, sans-serif;
+    user-select: none;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    background-color: #004e98;
+  }
+}
+
+/* XP UI Utilities & Components */
+.xp-window {
+  background-color: #ece9d8;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border: 3px solid #0055ea;
+  box-shadow: 2px 4px 16px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+}
+
+.xp-window-titlebar {
+  background: linear-gradient(180deg, #0a246a 0%, #a6caf0 8%, #0055ea 14%, #0055ea 60%, #0045c0 100%);
+  color: white;
+  text-shadow: 1px 1px 1px #000;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  user-select: none;
+  cursor: move;
+}
+
+.xp-window-titlebar.inactive {
+  background: linear-gradient(180deg, #7697c7 0%, #b0c4de 8%, #7697c7 14%, #6b8bb8 60%, #5d7ca8 100%);
+  text-shadow: none;
+}
+
+.xp-titlebar-btn {
+  width: 21px;
+  height: 21px;
+  border-radius: 3px;
+  border: 1px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  margin-left: 2px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.xp-btn-min, .xp-btn-max {
+  background: linear-gradient(180deg, #3884f7 0%, #2465df 50%, #1952c4 100%);
+  color: white;
+}
+
+.xp-btn-close {
+  background: linear-gradient(180deg, #e87352 0%, #d83e1c 50%, #b32b0e 100%);
+  color: white;
+}
+
+.xp-btn-min:hover, .xp-btn-max:hover {
+  background: linear-gradient(180deg, #5c9df8 0%, #3a79e8 50%, #2062d4 100%);
+}
+
+.xp-btn-close:hover {
+  background: linear-gradient(180deg, #f5886b 0%, #e8512e 50%, #c43719 100%);
+}
+
+/* Classic XP Bevel Buttons */
+.xp-button {
+  background: linear-gradient(180deg, #ffffff 0%, #ece9d8 10%, #d8d0c5 90%, #b5aba0 100%);
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: 'Tahoma', sans-serif;
+  color: #000;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #cfc7bc;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.05s ease-in-out;
+}
+
+.xp-button:hover {
+  border-color: #e68b2c;
+  box-shadow: inset 0 0 0 1px #ffe880, inset 1px 1px 0 #fff;
+}
+
+.xp-button:active {
+  background: linear-gradient(180deg, #c5beb3 0%, #d8d0c5 50%, #ece9d8 100%);
+  box-shadow: inset 1px 1px 2px #706b64;
+}
+
+.xp-button-primary {
+  border-color: #0045c0;
+  font-weight: bold;
+}
+
+/* XP Inset Panel */
+.xp-inset {
+  border: 2px solid;
+  border-color: #7f9db9 #ffffff #ffffff #7f9db9;
+  background-color: #ffffff;
+}
+
+.xp-sunken {
+  border: 1px solid;
+  border-color: #808080 #dfdfdf #dfdfdf #808080;
+  background: #fff;
+}
+
+/* XP Taskbar */
+.xp-taskbar {
+  background: linear-gradient(180deg, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #1941a5 100%);
+  border-top: 1px solid #3f8cf3;
+}
+
+/* Start Button */
+.xp-start-btn {
+  background: linear-gradient(180deg, #48b748 0%, #3ea03e 15%, #2a822a 85%, #236c23 100%);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.4), inset 0 1px 0 #7dd37d;
+  color: white;
+  text-shadow: 1px 1px 2px #184c18;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.xp-start-btn:hover {
+  background: linear-gradient(180deg, #55cf55 0%, #48b748 15%, #329932 85%, #2a822a 100%);
+}
+
+.xp-start-btn.active {
+  background: linear-gradient(180deg, #236c23 0%, #2a822a 85%, #3ea03e 100%);
+  box-shadow: inset 1px 1px 3px #113611;
+}
+
+/* Taskbar Button */
+.xp-task-item {
+  background: linear-gradient(180deg, #3c81f3 0%, #2968db 50%, #1e56be 100%);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 1px 1px 2px rgba(0,0,0,0.3);
+  color: white;
+  font-size: 12px;
+}
+
+.xp-task-item:hover {
+  background: linear-gradient(180deg, #5294fb 0%, #3a79e8 50%, #2863cb 100%);
+}
+
+.xp-task-item.active {
+  background: linear-gradient(180deg, #1b49a5 0%, #1e56be 50%, #2968db 100%);
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Custom Scrollbar for XP feel */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ece9d8;
+  border: 1px solid #d4d0c8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffffff 0%, #ece9d8 30%, #d4d0c8 100%);
+  border: 1px solid #003c74;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 0 #fff;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f5ed 30%, #dedad1 100%);
+}
