@@ -1,5 +1,6 @@
 import type { DayPlan, PracticeProblem, InterviewQuestion, ResourceLink, DailyWorkloadTiers, MockInterviewRound } from '../types';
 import { getStageForDay, BEING_ZERO_SQL_TOPICS, calculateRevisionDays } from './curriculumData';
+import { DSA_150_CURRICULUM } from './dsaCurriculumData';
 
 interface DsaDayData {
   pattern: string;
@@ -70,126 +71,14 @@ export function generateAll150Days(): DayPlan[] {
     let mockRound: MockInterviewRound | undefined = undefined;
 
     // =========================================================================
-    // 1. GRANULAR DSA PROGRESSION (Covering all primary interview patterns)
+    // 1. UNIQUE DAY-BY-DAY DSA CURRICULUM (150 Distinct LeetCode Problems)
     // =========================================================================
-    if (d <= 8) {
-      dsa = {
-        pattern: 'Arrays: Traversal & In-Place Modification',
-        concept: 'Contiguous memory layout, cache locality, and in-place pointer manipulation.',
-        problems: [
-          { title: 'Two Sum', difficulty: 'Easy', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode', desc: 'Single-pass HashMap lookup in O(N) time and O(N) space.' },
-          { title: 'Remove Duplicates from Sorted Array', difficulty: 'Easy', url: 'https://leetcode.com/problems/remove-duplicates-from-sorted-array/', platform: 'LeetCode', desc: 'Two-pointer slow/fast write in-place with O(1) space.' }
-        ]
-      };
-    } else if (d <= 16) {
-      dsa = {
-        pattern: 'Arrays: Prefix Sum & Difference Arrays',
-        concept: 'O(1) range sum queries via prefix sums and O(1) range updates via difference arrays.',
-        problems: [
-          { title: 'Subarray Sum Equals K', difficulty: 'Medium', url: 'https://leetcode.com/problems/subarray-sum-equals-k/', platform: 'LeetCode', desc: 'Prefix sum hash map accounting for negative values.' },
-          { title: 'Corporate Flight Bookings', difficulty: 'Medium', url: 'https://leetcode.com/problems/corporate-flight-bookings/', platform: 'LeetCode', desc: 'Difference array range additions in O(N + Q) time.' }
-        ]
-      };
-    } else if (d <= 24) {
-      dsa = {
-        pattern: 'Arrays: Kadane Algorithm & Interval Merging',
-        concept: 'Contiguous max subarray sum and greedy interval merging by sorting boundaries.',
-        problems: [
-          { title: 'Maximum Subarray', difficulty: 'Medium', url: 'https://leetcode.com/problems/maximum-subarray/', platform: 'LeetCode', desc: 'Kadane algorithm DP state compression in O(N) time and O(1) space.' },
-          { title: 'Merge Intervals', difficulty: 'Medium', url: 'https://leetcode.com/problems/merge-intervals/', platform: 'LeetCode', desc: 'Sort by start time and greedily extend running interval.' }
-        ]
-      };
-    } else if (d <= 32) {
-      dsa = {
-        pattern: 'Strings: Frequency Hashing & Palindromes',
-        concept: 'Character count tuples, anagram grouping, and expand-around-center palindromes.',
-        problems: [
-          { title: 'Group Anagrams', difficulty: 'Medium', url: 'https://leetcode.com/problems/group-anagrams/', platform: 'LeetCode', desc: 'Tuple frequency key grouping in O(N * K) time.' },
-          { title: 'Longest Palindromic Substring', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode', desc: 'Expand around 2N-1 centers in O(N^2) time and O(1) space.' }
-        ]
-      };
-    } else if (d <= 40) {
-      dsa = {
-        pattern: 'Two Pointers: Opposite Ends & Fast/Slow',
-        concept: 'Shrinking search boundaries and Floyd cycle detection.',
-        problems: [
-          { title: '3Sum', difficulty: 'Medium', url: 'https://leetcode.com/problems/3sum/', platform: 'LeetCode', desc: 'Sort + two pointers with duplicate skip conditions.' },
-          { title: 'Linked List Cycle II', difficulty: 'Medium', url: 'https://leetcode.com/problems/linked-list-cycle-ii/', platform: 'LeetCode', desc: 'Floyd Tortoise and Hare cycle start node proof.' }
-        ]
-      };
-    } else if (d <= 48) {
-      dsa = {
-        pattern: 'Binary Search: Rotated Arrays & Answer Space',
-        concept: 'Identifying sorted halves in rotated arrays and monotonic feasibility search.',
-        problems: [
-          { title: 'Search in Rotated Sorted Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/search-in-rotated-sorted-array/', platform: 'LeetCode', desc: 'O(log N) branch discrimination on sorted half.' },
-          { title: 'Koko Eating Bananas', difficulty: 'Medium', url: 'https://leetcode.com/problems/koko-eating-bananas/', platform: 'LeetCode', desc: 'Binary search on monotonic answer space.' }
-        ]
-      };
-    } else if (d <= 56) {
-      dsa = {
-        pattern: 'Bit Manipulation: XOR, Bitmasks & Brian Kernighan',
-        concept: 'Bitwise identities (x ^ x = 0), Brian Kernighan bit clearing n & (n-1), and subset masks.',
-        problems: [
-          { title: 'Single Number', difficulty: 'Easy', url: 'https://leetcode.com/problems/single-number/', platform: 'LeetCode', desc: 'XOR identity eliminates duplicate elements in O(1) space.' },
-          { title: 'Subsets', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets/', platform: 'LeetCode', desc: 'Bitmask enumeration from 0 to (1 << n) - 1.' }
-        ]
-      };
-    } else if (d <= 68) {
-      dsa = {
-        pattern: 'Stack: Monotonic Stack & Deque',
-        concept: 'Nearest greater/smaller elements and sliding window extremum in O(N).',
-        problems: [
-          { title: 'Daily Temperatures', difficulty: 'Medium', url: 'https://leetcode.com/problems/daily-temperatures/', platform: 'LeetCode', desc: 'Monotonic decreasing index stack.' },
-          { title: 'Largest Rectangle in Histogram', difficulty: 'Hard', url: 'https://leetcode.com/problems/largest-rectangle-in-histogram/', platform: 'LeetCode', desc: 'Single-pass monotonic stack finding left/right boundaries.' }
-        ]
-      };
-    } else if (d <= 78) {
-      dsa = {
-        pattern: 'Heaps & Priority Queues: Top-K & Two Heaps',
-        concept: 'Min/Max-heap duality, stream processing, and continuous median maintenance.',
-        problems: [
-          { title: 'Kth Largest Element in an Array', difficulty: 'Medium', url: 'https://leetcode.com/problems/kth-largest-element-in-an-array/', platform: 'LeetCode', desc: 'Min-Heap size K in O(N log K) or Quickselect.' },
-          { title: 'Find Median from Data Stream', difficulty: 'Hard', url: 'https://leetcode.com/problems/find-median-from-data-stream/', platform: 'LeetCode', desc: 'Two heaps (max-heap + min-heap) balance.' }
-        ]
-      };
-    } else if (d <= 88) {
-      dsa = {
-        pattern: 'Recursion & Backtracking: Subsets & Grid DFS',
-        concept: 'State-space decision trees, duplicate pruning, and constraint satisfaction.',
-        problems: [
-          { title: 'Subsets II', difficulty: 'Medium', url: 'https://leetcode.com/problems/subsets-ii/', platform: 'LeetCode', desc: 'Sort + skip duplicate siblings in recursion tree.' },
-          { title: 'Word Search', difficulty: 'Medium', url: 'https://leetcode.com/problems/word-search/', platform: 'LeetCode', desc: 'In-place grid DFS backtracking with character mark.' }
-        ]
-      };
-    } else if (d <= 104) {
-      dsa = {
-        pattern: 'Binary Trees & BSTs: DFS/BFS, LCA & Diameter',
-        concept: 'Tree path metrics, level order traversals, and lowest common ancestors.',
-        problems: [
-          { title: 'Lowest Common Ancestor of a Binary Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/', platform: 'LeetCode', desc: 'Post-order DFS split check in O(N) time.' },
-          { title: 'Validate Binary Search Tree', difficulty: 'Medium', url: 'https://leetcode.com/problems/validate-binary-search-tree/', platform: 'LeetCode', desc: 'Bounding range invariant [min, max] DFS.' }
-        ]
-      };
-    } else if (d <= 118) {
-      dsa = {
-        pattern: 'Graphs: BFS/DFS, TopoSort & Shortest Paths',
-        concept: 'Connected components, Kahn algorithm indegrees, and Dijkstra shortest paths.',
-        problems: [
-          { title: 'Course Schedule II', difficulty: 'Medium', url: 'https://leetcode.com/problems/course-schedule-ii/', platform: 'LeetCode', desc: 'Kahn algorithm topological sort with in-degree queue.' },
-          { title: 'Network Delay Time', difficulty: 'Medium', url: 'https://leetcode.com/problems/network-delay-time/', platform: 'LeetCode', desc: 'Dijkstra PriorityQueue min-heap in O((V + E) log V).' }
-        ]
-      };
-    } else {
-      dsa = {
-        pattern: 'Dynamic Programming: Knapsack, LIS & Timed Sprints',
-        concept: 'Unbounded Knapsack, Subsequences (LCS/LIS), and high-frequency timed interview sets.',
-        problems: [
-          { title: 'Coin Change', difficulty: 'Medium', url: 'https://leetcode.com/problems/coin-change/', platform: 'LeetCode', desc: 'Unbounded Knapsack 1D tabulation in O(N * Amount).' },
-          { title: 'Longest Increasing Subsequence', difficulty: 'Medium', url: 'https://leetcode.com/problems/longest-increasing-subsequence/', platform: 'LeetCode', desc: 'Patience sort binary search in O(N log N).' }
-        ]
-      };
-    }
+    const dsaData = DSA_150_CURRICULUM[d - 1] || DSA_150_CURRICULUM[0];
+    dsa = {
+      pattern: dsaData.pattern,
+      concept: dsaData.concept,
+      problems: dsaData.problems
+    };
 
     // =========================================================================
     // 2. SQL PROGRESSION (Being Zero Curriculum + Advanced Analytical SQL)
